@@ -1,0 +1,24 @@
+{"id":"coding-1","history":["Implement a Python function that sorts semantic version strings."],"category":"coding"}
+{"id":"coding-2","history":["Refactor this repository to extract a reusable HTTP client."],"category":"coding"}
+{"id":"coding-3","history":["Add parameterized tests for the email validator."],"category":"coding"}
+{"id":"coding-followup","history":["We need a bounded LRU cache for responses.","Implement it with a configurable capacity."],"category":"coding"}
+{"id":"debugging-1","history":["The build fails with an unresolved reference. Diagnose and fix the failure."],"category":"debugging"}
+{"id":"debugging-2","history":["Find why the app crashes when the screen rotates."],"category":"debugging"}
+{"id":"debugging-3","history":["Our tests intermittently hang. Investigate the underlying defect."],"category":"debugging"}
+{"id":"debugging-followup","history":["The login request returns HTTP 500.","Fix that failure and verify the correction."],"category":"debugging"}
+{"id":"research-1","history":["Compare PostgreSQL and SQLite for this embedded application."],"category":"research"}
+{"id":"research-2","history":["Review the proposed architecture for concurrency risks."],"category":"research"}
+{"id":"research-3","history":["Plan a migration from a monolith to modular services."],"category":"research"}
+{"id":"research-followup","history":["We can use Redis or an in-process cache.","Compare their failure modes."],"category":"research"}
+{"id":"writing-1","history":["Write a README explaining how to install this package."],"category":"writing"}
+{"id":"writing-2","history":["Rewrite this paragraph in plain English."],"category":"writing"}
+{"id":"writing-3","history":["Explain the request lifecycle to a new teammate."],"category":"writing"}
+{"id":"writing-followup","history":["Here is our architecture proposal.","Summarize it in three concise paragraphs."],"category":"writing"}
+{"id":"general-1","history":["Hello, how are you today?"],"category":"general"}
+{"id":"general-2","history":["Tell me a joke about penguins."],"category":"general"}
+{"id":"general-3","history":["What is two plus two?"],"category":"general"}
+{"id":"general-followup","history":["Hello!","Thanks, that is all."],"category":"general"}
+{"id":"ambiguous-coding","history":["Please add pagination to the endpoint.","Go ahead with that."],"category":"coding"}
+{"id":"ambiguous-writing","history":["Please simplify the wording of this document.","Make it shorter too."],"category":"writing"}
+{"id":"ambiguous-research","history":["We need to choose between Kafka and RabbitMQ.","What about operational complexity?"],"category":"research"}
+{"id":"ambiguous-debugging","history":["The server stops responding after a few hours.","Why does that happen?"],"category":"debugging"}
