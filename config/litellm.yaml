@@ -1,0 +1,57 @@
+model_list:
+  - model_name: gpt-5.6-luna
+    litellm_params:
+      model: gpt-5.6-luna
+      custom_llm_provider: openai
+      api_base: https://litellm.data.odyssey.preview.nwse.cloud/v1
+      api_key: os.environ/LITELLM_API_KEY
+
+  - model_name: gpt-5.6-terra
+    litellm_params:
+      model: gpt-5.6-terra
+      custom_llm_provider: openai
+      api_base: https://litellm.data.odyssey.preview.nwse.cloud/v1
+      api_key: os.environ/LITELLM_API_KEY
+
+  - model_name: gpt-5.6-sol
+    litellm_params:
+      model: gpt-5.6-sol
+      custom_llm_provider: openai
+      api_base: https://litellm.data.odyssey.preview.nwse.cloud/v1
+      api_key: os.environ/LITELLM_API_KEY
+
+  - model_name: auto
+    litellm_params:
+      model: gpt-5.6-luna
+      custom_llm_provider: openai
+      api_base: https://litellm.data.odyssey.preview.nwse.cloud/v1
+      api_key: os.environ/LITELLM_API_KEY
+      drop_params: true
+      reasoning_effort: low
+
+  - model_name: auto
+    litellm_params:
+      model: gpt-5.6-terra
+      custom_llm_provider: openai
+      api_base: https://litellm.data.odyssey.preview.nwse.cloud/v1
+      api_key: os.environ/LITELLM_API_KEY
+      drop_params: true
+      reasoning_effort: medium
+
+  - model_name: auto
+    litellm_params:
+      model: gpt-5.6-sol
+      custom_llm_provider: openai
+      api_base: https://litellm.data.odyssey.preview.nwse.cloud/v1
+      api_key: os.environ/LITELLM_API_KEY
+      drop_params: true
+      reasoning_effort: high
+
+# Attach the routing plugin globally. Its short-circuit runs classification only for the auto pool.
+router_settings:
+  plugins:
+    - laya_router.routing.direct_plugin
+
+litellm_settings:
+  callbacks:
+    - laya_router.routing.reasoning_effort_callback

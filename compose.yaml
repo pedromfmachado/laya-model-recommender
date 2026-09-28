@@ -1,7 +1,7 @@
 services:
   litellm:
     build: .
-    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    command: ["--config", "/app/config/litellm.yaml", "--port", "4000"]
     ports:
       - "127.0.0.1:4000:4000"
     environment:
