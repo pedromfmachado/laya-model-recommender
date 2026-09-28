@@ -1,0 +1,17 @@
+services:
+  litellm:
+    build: .
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    ports:
+      - "127.0.0.1:4000:4000"
+    environment:
+      LITELLM_API_KEY: ${LITELLM_API_KEY:?Set LITELLM_API_KEY to the remote LiteLLM API key}
+      HF_HOME: /cache/huggingface
+      TRANSFORMERS_CACHE: /cache/huggingface
+      LAYA_PRELOAD_ON_STARTUP: "1"
+    volumes:
+      - huggingface-cache:/cache/huggingface
+    restart: unless-stopped
+
+volumes:
+  huggingface-cache:

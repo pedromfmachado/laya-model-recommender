@@ -1,0 +1,11 @@
+model = "auto"
+model_provider = "laya"
+model_catalog_json = "@CODEX_HOME@/laya.models.json"
+model_reasoning_effort = "medium"
+
+[model_providers.laya]
+name = "LiteLLM Laya Auto"
+base_url = "http://127.0.0.1:4000/v1"
+wire_api = "responses"
+requires_openai_auth = false
+supports_websockets = false
