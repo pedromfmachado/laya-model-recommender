@@ -85,13 +85,34 @@ try:
         "The user handles model and reasoning selection manually."
     )
     current_model = payload.get("model")
-    if isinstance(current_model, str) and current_model.strip() and (
-        "-".join(current_model.lower().split()) != "-".join(model.lower().split())
-    ):
+    current_reasoning = payload.get("reasoning_effort")
+    if not isinstance(current_reasoning, str):
+        reasoning_setting = payload.get("reasoning")
+        current_reasoning = (
+            reasoning_setting.get("effort") if isinstance(reasoning_setting, dict)
+            else reasoning_setting if isinstance(reasoning_setting, str)
+            else None
+        )
+    normalize_setting = lambda value: "-".join(value.lower().replace("_", " ").split())
+    reasoning_aliases = {"low": "light", "xhigh": "extra-high", "extra high": "extra-high"}
+    selected_reasoning = (
+        reasoning_aliases.get(normalize_setting(current_reasoning), normalize_setting(current_reasoning))
+        if isinstance(current_reasoning, str) and current_reasoning.strip()
+        else None
+    )
+    recommended_reasoning = reasoning_aliases.get(normalize_setting(reasoning), normalize_setting(reasoning))
+    model_differs = (
+        isinstance(current_model, str) and current_model.strip()
+        and normalize_setting(current_model) != normalize_setting(model)
+    )
+    reasoning_differs = selected_reasoning is not None and selected_reasoning != recommended_reasoning
+    if model_differs or reasoning_differs:
         action_prompt = (
-            f"Would you like to switch this chat to **{model} · {reasoning}**, or keep the current settings? "
-            "Manually change the model and reasoning here if you want to switch; otherwise leave them unchanged. "
-            "Then choose **Proceed** to start the task."
+            f"Would you like to use **{model} · {reasoning}**? To use this recommendation, "
+            f"manually select **{model}** and **{reasoning}** in this chat's settings, "
+            "then choose **Proceed**. Codex will not change these settings for you. "
+            "To keep your current settings, leave them as they are and choose **Proceed**. "
+            "Proceed starts the task using the settings currently selected."
         )
         context = (
             f"First, post this recommendation message in the chat: {json.dumps(suggestion)}. "
