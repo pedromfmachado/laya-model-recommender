@@ -1,0 +1,16 @@
+{
+  "name": "model-recommender",
+  "version": "0.1.3",
+  "description": "Suggest a Codex model and reasoning level locally on the first prompt of each session.",
+  "hooks": "./hooks.json",
+  "skills": "./skills/",
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/setup/SKILL.md"
+    }
+  },
+  "interface": {
+    "displayName": "Model Recommender",
+    "shortDescription": "Local first-prompt model recommendations"
+  }
+}

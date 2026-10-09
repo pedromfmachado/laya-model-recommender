@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${PLUGIN_ROOT}/runtime.sh\" hook",
+            "timeout": 60,
+            "statusMessage": "Recommending a model for this task"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "device": "cpu",
+  "questions_file": "questions.json",
+  "model_mapping": {
+    "standard": "GPT-6 Luna",
+    "demanding": "GPT-6.1 Sol",
+    "exceptional": "GPT-6 Astra"
+  },
+  "reasoning_mapping": {
+    "direct": "Light",
+    "deliberative": "Medium",
+    "intensive": "High"
+  }
+}

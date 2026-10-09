@@ -1,0 +1,20 @@
+{
+  "capability": {
+    "type": "choice",
+    "instructions": "Choose the lowest capability sufficient for `request`. Classify the work, not its vocabulary, length, or number of outputs.",
+    "criteria": {
+      "standard": "Examples: rewrite a message, format JSON, write a small function, fix a routine bug, update UI copy.",
+      "demanding": "Examples: design backward-compatible synchronization, plan a live database migration, diagnose a race across services, reconcile conflicting system requirements.",
+      "exceptional": "Examples: invent an algorithm when known methods fail, develop a new mathematical proof technique, create a protocol for a novel fault model."
+    }
+  },
+  "effort": {
+    "type": "choice",
+    "instructions": "Choose the least reasoning sufficient for `request`. Straightforward multi-step work belongs to direct; uncertainty and difficult verification distinguish higher levels.",
+    "criteria": {
+      "direct": "Examples: fix a typo, edit a known resource, implement a specified function, repeat independent changes, run straightforward checks.",
+      "deliberative": "Examples: trace usages before a compatibility-sensitive rename, compare implementation alternatives, inspect dependencies to find a safe change.",
+      "intensive": "Examples: reproduce an intermittent concurrency bug, test competing explanations for inconsistent logs, verify an original proof against adversarial cases."
+    }
+  }
+}

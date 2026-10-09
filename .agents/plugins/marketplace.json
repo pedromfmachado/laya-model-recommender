@@ -1,0 +1,10 @@
+{
+  "name": "model-recommender-plugins",
+  "interface": {"displayName": "Model Recommender Plugins"},
+  "plugins": [{
+    "name": "model-recommender",
+    "source": {"source": "local", "path": "./"},
+    "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+    "category": "Productivity"
+  }]
+}
