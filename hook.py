@@ -73,8 +73,9 @@ try:
     capability_reason = questions["capability"]["criteria"][capability]
     effort_reason = questions["effort"]["criteria"][effort]
     suggestion = (
-        f"Laya suggests **{model} · {reasoning}** for this task, "
-        "based on the following classifications:\n\n"
+        f"The recommended model for this task is **{model}**. "
+        f"The recommended reasoning level is **{reasoning}**. "
+        "These recommendations are based on the following classifications:\n\n"
         f"- Capability demand: {capability_label} — {capability_reason}\n"
         f"- Reasoning demand: {effort_label} — {effort_reason}"
     )
@@ -118,11 +119,8 @@ try:
         )
     if model_differs or reasoning_differs:
         action_prompt = (
-            f"Would you like to use **{model} · {reasoning}**? To use this recommendation, "
-            f"manually select **{model}** and **{reasoning}** in this chat's settings, "
-            "then choose **Proceed**. Codex will not change these settings for you. "
-            "To keep your current settings, leave them as they are and choose **Proceed**. "
-            "Proceed starts the task using the settings currently selected."
+            f"Please select **{model}** and **{reasoning}** manually in the model selector "
+            "(or use `/model` to change the model), then click **Proceed**."
         )
         context = (
             f"First, post this recommendation message in the chat: {json.dumps(suggestion)}. "
