@@ -12,6 +12,6 @@
 - Keep classifier questions short and concrete.
 - Preserve the session guard, offline inference, JSON output, failure handling, and manual settings-selection flow unless the task requests changes.
 - Do not add or run tests or classifier trials unless explicitly requested. Review source, configuration, and diffs; report unverified behavior accurately.
-- Keep the README focused on current behavior, installation, use, configuration, and troubleshooting. Avoid duplicating code or JSON definitions in documentation.
+- Treat the README as a concise user guide for installing, using, configuring, and troubleshooting the plugin. Update it only when a change affects what users need to know or do. Keep implementation details, internal processing steps, trial results, and development history out of it; avoid duplicating code or JSON definitions.
 - Source edits require plugin refresh or reinstallation and a new chat before they affect the installed plugin.
 - Comments posted on the user's behalf must clearly identify them as written by Codex.

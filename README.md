@@ -20,8 +20,6 @@ Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI)
 
 Submit a prompt in a new chat. The recommendation includes the suggested model and reasoning level, plus the selected capability and reasoning demand labels.
 
-Before classification, surrounding whitespace is removed and line endings are normalized. Internal whitespace, code indentation, and punctuation are preserved.
-
 - If the recommended model or reasoning level differs from the selected setting, Codex asks whether you want to use the recommendation. Select the model and reasoning level manually in the chat settings, then reply **Proceed**. The desktop question offers only that option and keeps the turn active while waiting. If the question and waiting tools are unavailable, Codex asks in chat.
 - If the model and reasoning level match, or the hook input does not identify a difference, Codex shows the recommendation and continues immediately. When the hook input omits the selected reasoning level, the question can only be triggered by a model difference.
 
