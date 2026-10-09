@@ -11,18 +11,11 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
 
-def normalize_setting(value):
-    if not isinstance(value, str) or not value.strip():
-        return None
-    return "-".join(value.lower().replace("_", " ").replace("-", " ").split())
-
-
 def recommendation_context():
     return (
-        "IMPORTANT: The system message shows the model recommendation. Before doing any work, "
-        "use request_user_input_async with exactly two options: Proceed and Cancel. Wait for the "
-        "user's choice. Proceed continues this original request with current settings; Cancel "
-        "stops it. Do not ask the user to repeat the request."
+        "STOP: Before acting on the user's request, call request_user_input_async with exactly "
+        "two options: Proceed and Cancel. Wait for the choice. Proceed resumes this request "
+        "with current settings; Cancel stops it. Do not ask the user to repeat the request."
     )
 
 
@@ -75,33 +68,17 @@ def format_recommendation(config, capability, effort):
         f"Recommended: {model} · {reasoning}\n"
         f"Capability: {capability.replace('_', ' ').capitalize()}\n"
         f"Reasoning: {effort.replace('_', ' ').capitalize()}"
-    ), model, reasoning
-
-
-def build_output(payload, recommendation, model, reasoning):
-    selected_model = normalize_setting(payload.get("model"))
-    reasoning_setting = payload.get("reasoning")
-    selected_reasoning = normalize_setting(payload.get("reasoning_effort")) or normalize_setting(
-        reasoning_setting.get("effort") if isinstance(reasoning_setting, dict) else reasoning_setting
     )
-    selected_reasoning = {"low": "light", "xhigh": "extra-high"}.get(
-        selected_reasoning, selected_reasoning
-    )
-    model_differs = selected_model is not None and selected_model != normalize_setting(model)
-    reasoning_differs = selected_reasoning is not None and selected_reasoning != normalize_setting(reasoning)
 
-    if model_differs or reasoning_differs:
-        return {
-            "systemMessage": recommendation,
-            "hookSpecificOutput": {
-                "hookEventName": "UserPromptSubmit",
-                "additionalContext": recommendation_context(),
-            },
-        }
 
-    if selected_model == normalize_setting(model) and selected_reasoning == normalize_setting(reasoning):
-        recommendation += "\n\nThe recommended model and reasoning level match the current settings."
-    return {"systemMessage": recommendation}
+def build_output(recommendation):
+    return {
+        "systemMessage": recommendation,
+        "hookSpecificOutput": {
+            "hookEventName": "UserPromptSubmit",
+            "additionalContext": recommendation_context(),
+        },
+    }
 
 
 def main():
@@ -111,8 +88,8 @@ def main():
             output = {}
         else:
             config, capability, effort = classify(request)
-            recommendation, model, reasoning = format_recommendation(config, capability, effort)
-            output = build_output(payload, recommendation, model, reasoning)
+            recommendation = format_recommendation(config, capability, effort)
+            output = build_output(recommendation)
     except Exception as error:
         output = {"systemMessage": (
             f"Model recommendation failed: {type(error).__name__}: {error}. "
