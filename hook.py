@@ -10,18 +10,48 @@ os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
+
+def normalize_setting(value):
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return "-".join(value.lower().replace("_", " ").replace("-", " ").split())
+
+
+setup_guidance = (
+    "Rerun Model Recommender setup from the plugin settings, or ask Codex to set up "
+    "Model Recommender, then start a new chat. The task will continue using the current settings."
+)
+
 try:
     payload = json.load(sys.stdin)
+    if not isinstance(payload, dict) or payload.get("hook_event_name", "UserPromptSubmit") != "UserPromptSubmit":
+        raise ValueError("A UserPromptSubmit object is required")
     session_id = payload["session_id"]
     if not isinstance(session_id, str) or not session_id.strip():
         raise ValueError("A session id is required")
+    prompt = payload["prompt"]
+    if not isinstance(prompt, str):
+        raise ValueError("A prompt is required")
+    request = prompt.replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not request:
+        raise ValueError("A prompt is required")
+except Exception:
+    print("{}")
+    sys.exit(0)
+
+try:
     state_dir = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "model-routing" / "sessions"
     state_dir.mkdir(parents=True, exist_ok=True)
     session_key = hashlib.sha256(session_id.encode()).hexdigest()
     # Claim the session before inference so retries and concurrent hooks skip it.
-    (state_dir / session_key).touch(exist_ok=False)
+    try:
+        (state_dir / session_key).touch(exist_ok=False)
+    except FileExistsError:
+        print("{}")
+        sys.exit(0)
 except Exception:
-    print("{}")
+    print(json.dumps({"systemMessage": "Model recommendation skipped because session tracking is unavailable. "
+        "The task will continue using the current settings."}))
     sys.exit(0)
 
 try:
@@ -50,18 +80,12 @@ try:
     from huggingface_hub.errors import LocalEntryNotFoundError
 
     try:
-        request = payload["prompt"].replace("\r\n", "\n").replace("\r", "\n").strip()
         result = Router(
             models={"english": sys.argv[1]} if len(sys.argv) > 1 else None,
             default="english", device=config["device"],
         ).predict({"request": request}, questions, model="english")
     except LocalEntryNotFoundError:
-        print(json.dumps({"hookSpecificOutput": {
-            "hookEventName": "UserPromptSubmit",
-            "additionalContext": "Briefly tell the user that Model Recommender needs its classifier checkpoint. "
-                "Recommend rerunning Model Recommender setup from the plugin settings, or asking Codex to set up "
-                "Model Recommender, then starting a new chat. Continue the current task.",
-        }}))
+        print(json.dumps({"systemMessage": "Model Recommender needs its classifier checkpoint. " + setup_guidance}))
         sys.exit(0)
     if result["usage"]["truncated"]:
         raise ValueError("Prompt did not fit")
@@ -80,79 +104,34 @@ try:
         f"- Capability demand: {capability_label} — {capability_reason}\n"
         f"- Reasoning demand: {effort_label} — {effort_reason}"
     )
-    context = (
-        f"Post this recommendation message in the chat: {json.dumps(suggestion)}. "
-        "Keep its classification bullets. Continue working on the user's task "
-        "immediately without asking for confirmation or waiting for a settings change. "
-        "The user handles model and reasoning selection manually."
-    )
-    current_model = payload.get("model")
-    current_reasoning = payload.get("reasoning_effort")
-    if not isinstance(current_reasoning, str):
+    selected_model = normalize_setting(payload.get("model"))
+    selected_reasoning = normalize_setting(payload.get("reasoning_effort"))
+    if selected_reasoning is None:
         reasoning_setting = payload.get("reasoning")
-        current_reasoning = (
+        selected_reasoning = normalize_setting(
             reasoning_setting.get("effort") if isinstance(reasoning_setting, dict)
-            else reasoning_setting if isinstance(reasoning_setting, str)
-            else None
+            else reasoning_setting
         )
-    normalize_setting = lambda value: "-".join(value.lower().replace("_", " ").split())
-    reasoning_aliases = {"low": "light", "xhigh": "extra-high", "extra high": "extra-high"}
-    selected_reasoning = (
-        reasoning_aliases.get(normalize_setting(current_reasoning), normalize_setting(current_reasoning))
-        if isinstance(current_reasoning, str) and current_reasoning.strip()
-        else None
-    )
-    recommended_reasoning = reasoning_aliases.get(normalize_setting(reasoning), normalize_setting(reasoning))
-    model_differs = (
-        isinstance(current_model, str) and current_model.strip()
-        and normalize_setting(current_model) != normalize_setting(model)
-    )
-    model_matches = (
-        isinstance(current_model, str) and current_model.strip()
-        and normalize_setting(current_model) == normalize_setting(model)
-    )
+    reasoning_aliases = {"low": "light", "xhigh": "extra-high"}
+    selected_reasoning = reasoning_aliases.get(selected_reasoning, selected_reasoning)
+    recommended_model = normalize_setting(model)
+    recommended_reasoning = normalize_setting(reasoning)
+    model_differs = selected_model is not None and selected_model != recommended_model
     reasoning_differs = selected_reasoning is not None and selected_reasoning != recommended_reasoning
-    both_settings_match = model_matches and selected_reasoning == recommended_reasoning
-    if both_settings_match:
-        context += (
-            " After the recommendation, state that the recommended model and reasoning level "
-            "match the current settings, and that Codex will proceed with the task."
-        )
     if model_differs or reasoning_differs:
-        action_prompt = (
-            f"Please select **{model}** and **{reasoning}** manually in the model selector "
-            "(or use `/model` to change the model), then click **Proceed**."
-        )
-        context = (
-            f"First, post this recommendation message in the chat: {json.dumps(suggestion)}. "
-            f"Then ask this separate action prompt before working on the task: {json.dumps(action_prompt)}. "
-            "Do not repeat the recommendation or its classification bullets in the action prompt. "
-            "If request_user_input_async and clock.sleep are both available, submit the action prompt "
-            "using request_user_input_async with exactly one option: 'Proceed'. "
-            "The async tool returns immediately; an accepted result only acknowledges "
-            "submission and is not the user's answer. Keep the turn active while the question "
-            "is pending: call clock.sleep with duration_ms=30000, check incoming user replies, "
-            "and repeat the sleep until the user explicitly replies 'Proceed'. "
-            "If a sleep expires without that reply, sleep again; there is no overall waiting "
-            "deadline. Do not send a final message or end the turn while waiting, because "
-            "turn completion discards the pending question in the desktop app. "
-            "Do not work on the original task before the user's explicit 'Proceed' reply; "
-            "tool acceptance, a preselected option, a dismissed question, elapsed time, "
-            "or a settings change is not that reply. If either tool is unavailable, ask "
-            "the question in chat, request only the reply 'Proceed', and wait for the "
-            "user's next message before working on the original task. "
-            "The user handles model and reasoning selection manually. After 'Proceed', "
-            "continue the original task using the settings selected by the user."
-        )
+        output = {"decision": "block", "reason": suggestion + (
+            f"\n\nSelect **{model}** and **{reasoning}** manually in the model selector "
+            "(or use `/model`), or keep your current settings. Then resubmit your original task "
+            "to continue. Changing settings alone does not resume the task."
+        )}
+    else:
+        if selected_model == recommended_model and selected_reasoning == recommended_reasoning:
+            suggestion += "\n\nThe recommended model and reasoning level match the current settings."
+        output = {"systemMessage": suggestion}
 except ModuleNotFoundError:
-    context = (
-        "Briefly tell the user that Model Recommender needs its classifier dependency. "
-        "Recommend rerunning Model Recommender setup from the plugin settings, or asking Codex to set up "
-        "Model Recommender, then starting a new chat. Continue the current task."
-    )
+    output = {"systemMessage": "Model Recommender needs its classifier dependency. " + setup_guidance}
 except Exception:
-    context = (
-        "Model and reasoning recommendation is unavailable. Briefly warn the user and continue using the current settings."
-    )
+    output = {"systemMessage": "Model and reasoning recommendation is unavailable. "
+        "The task will continue using the current settings."}
 
-print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}))
+print(json.dumps(output))

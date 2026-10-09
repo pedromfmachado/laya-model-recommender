@@ -34,7 +34,7 @@ case "${1:-hook}" in
         if [ -f "$data_dir/ready" ] && [ -x "$python" ]; then
             exec "$python" -B "$plugin_root/hook.py"
         fi
-        printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"Briefly tell the user to run Model Recommender setup from the plugin settings, or ask Codex to set up Model Recommender. Continue the current task using the current settings."}}'
+        printf '%s\n' '{"systemMessage":"Run Model Recommender setup from the plugin settings, or ask Codex to set up Model Recommender, then start a new chat. The task will continue using the current settings."}'
         ;;
     *)
         printf '%s\n' 'Usage: sh runtime.sh [setup|hook]' >&2
