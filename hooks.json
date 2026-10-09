@@ -11,6 +11,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${PLUGIN_ROOT}/runtime.sh\" stop",
+            "timeout": 60
+          }
+        ]
+      }
     ]
   }
 }

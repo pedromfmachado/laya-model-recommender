@@ -36,8 +36,14 @@ case "${1:-hook}" in
         fi
         printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"Briefly tell the user to run Model Recommender setup from the plugin settings, or ask Codex to set up Model Recommender. Continue the current task using the current settings."}}'
         ;;
+    stop)
+        if [ -f "$data_dir/ready" ] && [ -x "$python" ]; then
+            exec "$python" -B "$plugin_root/hook.py"
+        fi
+        printf '%s\n' '{}'
+        ;;
     *)
-        printf '%s\n' 'Usage: sh runtime.sh [setup|hook]' >&2
+        printf '%s\n' 'Usage: sh runtime.sh [setup|hook|stop]' >&2
         exit 2
         ;;
 esac

@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -12,14 +13,33 @@ os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
 try:
     payload = json.load(sys.stdin)
-    session_id = payload["session_id"]
-    if not isinstance(session_id, str) or not session_id.strip():
-        raise ValueError("A session id is required")
-    state_dir = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "model-routing" / "sessions"
-    state_dir.mkdir(parents=True, exist_ok=True)
-    session_key = hashlib.sha256(session_id.encode()).hexdigest()
-    # Claim the session before inference so retries and concurrent hooks skip it.
-    (state_dir / session_key).touch(exist_ok=False)
+    hook_event = payload.get("hook_event_name", "UserPromptSubmit")
+    if hook_event == "UserPromptSubmit":
+        session_id = payload["session_id"]
+        if not isinstance(session_id, str) or not session_id.strip():
+            raise ValueError("A session id is required")
+        state_dir = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "model-routing" / "sessions"
+        state_dir.mkdir(parents=True, exist_ok=True)
+        session_key = hashlib.sha256(session_id.encode()).hexdigest()
+        # Claim the session before inference so retries and concurrent hooks skip it.
+        (state_dir / session_key).touch(exist_ok=False)
+        request = payload["prompt"]
+    elif hook_event == "Stop":
+        message = payload.get("last_assistant_message")
+        match = re.search(
+            r"(?ms)^[ \t]*<proposed_plan>[ \t]*\r?\n(.*?)\r?\n[ \t]*</proposed_plan>[ \t]*(?=\r?\n|$)",
+            message,
+        ) if isinstance(message, str) else None
+        if not match:
+            print("{}")
+            sys.exit(0)
+        request = match.group(1).strip()
+        if not request:
+            print("{}")
+            sys.exit(0)
+    else:
+        print("{}")
+        sys.exit(0)
 except Exception:
     print("{}")
     sys.exit(0)
@@ -53,8 +73,11 @@ try:
         result = Router(
             models={"english": sys.argv[1]} if len(sys.argv) > 1 else None,
             default="english", device=config["device"],
-        ).predict({"request": payload["prompt"]}, questions, model="english")
+        ).predict({"request": request}, questions, model="english")
     except LocalEntryNotFoundError:
+        if hook_event == "Stop":
+            print("{}")
+            sys.exit(0)
         print(json.dumps({"hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
             "additionalContext": "Briefly tell the user that Model Recommender needs its classifier checkpoint. "
@@ -72,6 +95,15 @@ try:
     effort_label = effort.replace("_", " ").capitalize()
     capability_reason = questions["capability"]["criteria"][capability]
     effort_reason = questions["effort"]["criteria"][effort]
+    if hook_event == "Stop":
+        system_message = (
+            f"Recommended model for implementing this plan: **{model} · {reasoning}**. "
+            "You can select the model and reasoning level manually in this chat.\n\n"
+            f"- Capability demand: {capability_label} — {capability_reason}\n"
+            f"- Reasoning demand: {effort_label} — {effort_reason}"
+        )
+        print(json.dumps({"systemMessage": system_message}))
+        sys.exit(0)
     suggestion = (
         f"The recommended model for this task is **{model}**. "
         f"The recommended reasoning level is **{reasoning}**. "
@@ -144,12 +176,18 @@ try:
             "continue the original task using the settings selected by the user."
         )
 except ModuleNotFoundError:
+    if hook_event == "Stop":
+        print("{}")
+        sys.exit(0)
     context = (
         "Briefly tell the user that Model Recommender needs its classifier dependency. "
         "Recommend rerunning Model Recommender setup from the plugin settings, or asking Codex to set up "
         "Model Recommender, then starting a new chat. Continue the current task."
     )
 except Exception:
+    if hook_event == "Stop":
+        print("{}")
+        sys.exit(0)
     context = (
         "Model and reasoning recommendation is unavailable. Briefly warn the user and continue using the current settings."
     )
