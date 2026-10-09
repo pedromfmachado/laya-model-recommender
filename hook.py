@@ -105,7 +105,17 @@ try:
         isinstance(current_model, str) and current_model.strip()
         and normalize_setting(current_model) != normalize_setting(model)
     )
+    model_matches = (
+        isinstance(current_model, str) and current_model.strip()
+        and normalize_setting(current_model) == normalize_setting(model)
+    )
     reasoning_differs = selected_reasoning is not None and selected_reasoning != recommended_reasoning
+    both_settings_match = model_matches and selected_reasoning == recommended_reasoning
+    if both_settings_match:
+        context += (
+            " After the recommendation, state that the recommended model and reasoning level "
+            "match the current settings, and that Codex will proceed with the task."
+        )
     if model_differs or reasoning_differs:
         action_prompt = (
             f"Would you like to use **{model} · {reasoning}**? To use this recommendation, "
