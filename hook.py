@@ -11,11 +11,13 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
 
-def recommendation_context():
+def recommendation_context(recommendation):
     return (
-        "STOP: Before acting on the user's request, call request_user_input_async with exactly "
-        "two options: Proceed and Cancel. Wait for the choice. Proceed resumes this request "
-        "with current settings; Cancel stops it. Do not ask the user to repeat the request."
+        "STOP: Before acting, send this recommendation as a normal assistant message:\n\n"
+        f"{recommendation}\n\n"
+        "Then ask 'Proceed with the original request using current settings?' via "
+        "request_user_input_async with exactly one option: Proceed. Wait for the user's choice "
+        "before continuing. Do not ask the user to repeat the request."
     )
 
 
@@ -73,10 +75,9 @@ def format_recommendation(config, capability, effort):
 
 def build_output(recommendation):
     return {
-        "systemMessage": recommendation,
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
-            "additionalContext": recommendation_context(),
+            "additionalContext": recommendation_context(recommendation),
         },
     }
 
