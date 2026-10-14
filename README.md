@@ -9,7 +9,7 @@ Requires the Codex CLI with hook plugin support on macOS or Linux. Run these com
 ```sh
 codex plugin marketplace add pedromfmachado/laya-model-recommender
 codex plugin add model-recommender@model-recommender-plugins
-sh "$HOME/.codex/plugins/cache/model-recommender-plugins/model-recommender/0.1.3/runtime.sh" setup
+sh "$HOME/.codex/plugins/cache/model-recommender-plugins/model-recommender/0.0.1/runtime.sh" setup
 ```
 
 Setup downloads a private Python runtime, classifier, and model automatically. No Homebrew or Python installation is needed. The first setup requires internet access and can take a few minutes; recommendations then run locally and offline.
@@ -18,9 +18,9 @@ Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI)
 
 ## Use
 
-Submit a prompt in a new chat. The recommendation includes the suggested model and reasoning level, plus the selected capability and reasoning demand labels.
+Submit a prompt in a new chat. The recommendation shows the suggested model and reasoning level.
 
-- On the first prompt in each session, if the recommended model differs from your selected model, Codex asks whether to continue with the current settings or cancel this prompt. Choose cancel to change settings manually and resubmit. If your selected model matches, the prompt continues with a matching recommendation message.
+- On the first prompt in each session, if the recommended model differs from your current model, choose **Continue with current settings** or **Cancel this prompt and change settings**. If your model matches, the prompt continues with a short confirmation.
 
 Recommendations run once per session, including resumed chats. The plugin leaves model and reasoning selection to you.
 
@@ -39,7 +39,7 @@ Reopen Codex, review and trust the updated hook if prompted, then run Model Reco
 
 Edit the plugin's JSON files to customize recommendations:
 
-- `questions.json` defines the `capability` and `effort` choice questions, instructions, and option descriptions.
+- `questions.json` defines the `capability` and `effort` choice questions, instructions, and option labels.
 - `router.json` defines the inference device, `questions_file`, `model_mapping`, and `reasoning_mapping`. Relative question-file paths resolve from the plugin directory.
 
 The default mappings are:
@@ -56,7 +56,7 @@ The default mappings are:
 | Deliberative | Medium |
 | Intensive | High |
 
-Each question must use `type: "choice"` with nonempty instructions and option definitions. Every capability option needs an entry in `model_mapping`; every effort option needs an entry in `reasoning_mapping`. Reasoning labels can be `Light`, `Medium`, `High`, or `Extra High`; the default policy stops at High. The recommendation displays both selected options.
+Each question must use `type: "choice"` with nonempty instructions and option labels. Every capability option needs an entry in `model_mapping`; every effort option needs an entry in `reasoning_mapping`. Reasoning labels can be `Light`, `Medium`, `High`, or `Extra High`; the default policy stops at High.
 
 Reinstall or refresh the plugin to apply changes, then start a new chat.
 

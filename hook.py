@@ -66,11 +66,7 @@ def classify(request):
 def format_recommendation(config, capability, effort):
     model = config["model_mapping"][capability]
     reasoning = config["reasoning_mapping"][effort]
-    return (
-        f"Recommended: {model} · {reasoning}\n"
-        f"Capability: {capability.replace('_', ' ').capitalize()}\n"
-        f"Reasoning: {effort.replace('_', ' ').capitalize()}"
-    ), model, reasoning
+    return f"Recommended: {model} · {reasoning}", model, reasoning
 
 
 def compare_model(payload, model):

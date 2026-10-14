@@ -18,9 +18,12 @@ class PromptChoice(BaseModel):
     model_config = ConfigDict(json_schema_extra=_remove_schema_title)
 
     action: str = Field(
-        description="Proceed with the current selections, or cancel this prompt to change them manually.",
+        description="Choose an action.",
         json_schema_extra={
-            "enum": ["proceed_with_current_settings", "cancel_and_change_settings"]
+            "enum": [
+                "Continue with current settings",
+                "Cancel this prompt and change settings",
+            ]
         },
     )
 
@@ -74,20 +77,18 @@ async def recommend_for_prompt(
         try:
             answer = await ctx.elicit(
                 message=(
-                    f"{recommendation}\n\nThe recommended model differs from your selected model. "
-                    "Choose whether to continue this prompt with your current settings or cancel it, "
-                    "change settings manually, and resubmit."
+                    f"{recommendation}\n\nThe recommended model differs from your current model."
                 ),
                 schema=PromptChoice,
             )
         except Exception:
             marker.unlink(missing_ok=True)
             raise
-        if answer.action == "accept" and answer.data.action == "proceed_with_current_settings":
-            return hook_output(system_message="Continuing with your current model and reasoning settings.")
+        if answer.action == "accept" and answer.data.action == "Continue with current settings":
+            return hook_output(system_message="Continuing with current settings.")
         return hook_output(
             decision="block",
-            reason="Prompt cancelled. Change the model or reasoning settings manually, then resubmit your prompt.",
+            reason="Prompt cancelled. Change your settings, then resubmit.",
         )
     except Exception as error:
         logging.exception("Model recommendation failed")

@@ -1,6 +1,6 @@
 {
   "name": "model-recommender",
-  "version": "0.1.3",
+  "version": "0.0.1",
   "description": "Suggest a Codex model and reasoning level locally on the first prompt of each session.",
   "hooks": "./hooks.json",
   "mcpServers": "./.mcp.json",
