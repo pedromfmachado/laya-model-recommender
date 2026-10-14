@@ -23,9 +23,9 @@ sh "${CODEX_HOME:-$HOME/.codex}/plugins/cache/model-recommender-plugins/model-re
 
 ## Use
 
-Submit a prompt in a new chat. The recommendation shows the suggested model and reasoning level.
+Submit a prompt in a new chat. On the first prompt in a session, the hook shows its recommended model and reasoning level.
 
-- On the first prompt in each session, if the recommended model differs from your current model, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** If you change settings, the original request stays in context; send a short follow-up to continue it. If your model matches, the prompt continues with a short confirmation.
+- If the recommended model differs from your current model, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** Choosing the second option blocks the prompt but keeps the original request in context. After changing settings, send a short follow-up, such as “Continue,” to resume it. If your model matches, the prompt continues with a short confirmation.
 
 Recommendations run once per session, including resumed chats. The plugin leaves model and reasoning selection to you.
 
@@ -62,6 +62,8 @@ The default mappings are:
 | Intensive | High |
 
 Each question must use `type: "choice"` with nonempty instructions and option labels. Every capability option needs an entry in `model_mapping`; every effort option needs an entry in `reasoning_mapping`. Reasoning labels can be `Light`, `Medium`, `High`, or `Extra High`; the default policy stops at High.
+
+For a component overview and the startup-to-prompt communication flow, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Reinstall or refresh the plugin to apply changes, then start a new chat.
 
