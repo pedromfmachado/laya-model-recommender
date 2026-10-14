@@ -1,4 +1,5 @@
 """Local MCP tool used by the synchronous prompt-submit hook."""
+import json
 import logging
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -21,14 +22,14 @@ class PromptChoice(BaseModel):
         description="Choose an action.",
         json_schema_extra={
             "enum": [
-                "Continue with current settings",
-                "Cancel this prompt and change settings",
+                "Use my current settings for this prompt.",
+                "Change settings, then continue with this prompt.",
             ]
         },
     )
 
 
-def hook_output(decision=None, reason=None, system_message=None):
+def hook_output(decision=None, reason=None, system_message=None, additional_context=None):
     result = {}
     if decision:
         result["decision"] = decision
@@ -36,6 +37,11 @@ def hook_output(decision=None, reason=None, system_message=None):
         result["reason"] = reason
     if system_message:
         result["systemMessage"] = system_message
+    if additional_context:
+        result["hookSpecificOutput"] = {
+            "hookEventName": "UserPromptSubmit",
+            "additionalContext": additional_context,
+        }
     return result
 
 
@@ -54,7 +60,7 @@ async def recommend_for_prompt(
             return hook_output()
 
         config, capability, effort = classify(prompt.strip())
-        recommendation, suggested_model, _ = format_recommendation(
+        recommendation, suggested_model, suggested_reasoning = format_recommendation(
             config, capability, effort
         )
         differs, matches = compare_model({"model": model}, suggested_model)
@@ -77,18 +83,31 @@ async def recommend_for_prompt(
         try:
             answer = await ctx.elicit(
                 message=(
-                    f"{recommendation}\n\nThe recommended model differs from your current model."
+                    f"I recommend **{suggested_model} · {suggested_reasoning}** for this prompt. "
+                    "What would you like to do?"
                 ),
                 schema=PromptChoice,
             )
         except Exception:
             marker.unlink(missing_ok=True)
             raise
-        if answer.action == "accept" and answer.data.action == "Continue with current settings":
+        if (
+            answer.action == "accept"
+            and answer.data.action == "Use my current settings for this prompt."
+        ):
             return hook_output(system_message="Continuing with current settings.")
         return hook_output(
             decision="block",
-            reason="Prompt cancelled. Change your settings, then resubmit.",
+            reason=(
+                "Prompt paused. Change your settings, then send a short follow-up to continue "
+                "with the original request."
+            ),
+            additional_context=(
+                "The following is the user's original request, preserved as a JSON string "
+                "because the prompt was blocked while they changed settings. Continue with "
+                "this request when they resume; if they send an updated request, follow that.\n"
+                f"{json.dumps(prompt, ensure_ascii=False)}"
+            ),
         )
     except Exception as error:
         logging.exception("Model recommendation failed")

@@ -25,7 +25,7 @@ sh "${CODEX_HOME:-$HOME/.codex}/plugins/cache/model-recommender-plugins/model-re
 
 Submit a prompt in a new chat. The recommendation shows the suggested model and reasoning level.
 
-- On the first prompt in each session, if the recommended model differs from your current model, choose **Continue with current settings** or **Cancel this prompt and change settings**. If your model matches, the prompt continues with a short confirmation.
+- On the first prompt in each session, if the recommended model differs from your current model, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** If you change settings, the original request stays in context; send a short follow-up to continue it. If your model matches, the prompt continues with a short confirmation.
 
 Recommendations run once per session, including resumed chats. The plugin leaves model and reasoning selection to you.
 
