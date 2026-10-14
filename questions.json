@@ -1,12 +1,23 @@
 {
-  "capability": {
-    "type": "choice",
-    "instructions": "Choose the lowest capability level that can complete the request.",
-    "criteria": ["standard", "demanding", "exceptional"]
-  },
-  "effort": {
-    "type": "choice",
-    "instructions": "Choose the least reasoning needed to complete the request.",
-    "criteria": ["direct", "deliberative", "intensive"]
-  }
+  "questions": [
+    {
+      "id": "model_tier",
+      "type": "choice",
+      "prompt": "Select the model tier required for this prompt based on scope and execution environment:",
+      "options": {
+        "luna": "Self-contained, bounded task, single file/component, direct Q&A, or straightforward transformation.",
+        "sol": "Multi-file/repository scope, agentic tool iteration, open-ended investigation, or system architecture."
+      }
+    },
+    {
+      "id": "reasoning_level",
+      "type": "choice",
+      "prompt": "Select the minimum reasoning effort level required to complete the task accurately:",
+      "options": {
+        "mid": "Direct instruction, standard logic, routine edits, or simple context validation.",
+        "high": "Moderate constraint satisfaction, multi-step verification, or edge-case handling.",
+        "extra_high": "Deep architectural reasoning, concurrency/race-condition diagnosis, or complex system invariants."
+      }
+    }
+  ]
 }

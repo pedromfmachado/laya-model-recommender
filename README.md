@@ -1,6 +1,6 @@
 # Model Recommender
 
-A Codex plugin that uses the local Laya classifier to recommend a model and reasoning level for the first prompt in each session. It classifies capability and reasoning demand independently, with a policy that favors **GPT-6 Luna · Light** for familiar work.
+A Codex plugin that uses the local Laya classifier to recommend a model tier and reasoning level for the first prompt in each session. It classifies task scope and reasoning demand independently, with a policy that favors **GPT-6 Luna · Medium** for bounded work.
 
 ## Install
 
@@ -44,24 +44,23 @@ Reopen Codex and start a new chat. The local MCP server checks its installed plu
 
 Edit the plugin's JSON files to customize recommendations:
 
-- `questions.json` defines the `capability` and `effort` choice questions, instructions, and option labels.
+- `questions.json` defines the `model_tier` and `reasoning_level` choice questions, prompts, and option descriptions.
 - `router.json` defines the inference device, `questions_file`, `model_mapping`, and `reasoning_mapping`. Relative question-file paths resolve from the plugin directory.
 
 The default mappings are:
 
-| Capability demand | Model |
+| Model tier | Model |
 | --- | --- |
-| Standard | GPT-6 Luna |
-| Demanding | GPT-6.1 Sol |
-| Exceptional | GPT-6 Astra |
+| Luna | GPT-6 Luna |
+| Sol | GPT-6.1 Sol |
 
-| Reasoning demand | Reasoning level |
+| Reasoning level | Recommended setting |
 | --- | --- |
-| Direct | Light |
-| Deliberative | Medium |
-| Intensive | High |
+| Mid | Medium |
+| High | High |
+| Extra High | Extra High |
 
-Each question must use `type: "choice"` with nonempty instructions and option labels. Every capability option needs an entry in `model_mapping`; every effort option needs an entry in `reasoning_mapping`. Reasoning labels can be `Light`, `Medium`, `High`, or `Extra High`; the default policy stops at High.
+Each question uses `type: "choice"`, a prompt, and option descriptions. Every model tier option needs an entry in `model_mapping`; every reasoning level option needs an entry in `reasoning_mapping`.
 
 For a component overview and the startup-to-prompt communication flow, see [ARCHITECTURE.md](ARCHITECTURE.md).
 

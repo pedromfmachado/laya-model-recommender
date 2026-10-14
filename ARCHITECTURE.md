@@ -9,7 +9,7 @@ Model Recommender runs a local classifier before Codex sends the first prompt in
 | Codex host | Starts the plugin MCP server, calls the prompt hook, displays elicitation choices, and applies the hook result. |
 | Plugin runtime | Checks whether setup is ready; if setup is missing or stale, prepares the private Python runtime, dependencies, and local classifier model before starting the MCP server. |
 | Recommender MCP server | Receives the prompt, session ID, and selected model; runs the session guard and classification flow; asks the user what to do when the recommended model differs. |
-| Local Laya classifier | Classifies capability and reasoning demand using the configured questions. After setup, inference runs locally and offline. |
+| Local Laya classifier | Classifies model tier and reasoning effort using the configured questions. After setup, inference runs locally and offline. |
 | User | Chooses whether to use current settings or change them. The plugin does not change model or reasoning settings. |
 
 ## Communication flow

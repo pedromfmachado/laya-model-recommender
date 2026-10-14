@@ -59,9 +59,9 @@ async def recommend_for_prompt(
         if session_marker(session_id).exists():
             return hook_output()
 
-        config, capability, effort = classify(prompt.strip())
+        config, model_tier, reasoning_level = classify(prompt.strip())
         recommendation, suggested_model, suggested_reasoning = format_recommendation(
-            config, capability, effort
+            config, model_tier, reasoning_level
         )
         differs, matches = compare_model({"model": model}, suggested_model)
         if not differs and matches:
@@ -83,7 +83,7 @@ async def recommend_for_prompt(
         try:
             answer = await ctx.elicit(
                 message=(
-                    f"I recommend **{suggested_model} · {suggested_reasoning}** for this prompt. "
+                    f"Recommendation: {suggested_model} · {suggested_reasoning}\n\n"
                     "What would you like to do?"
                 ),
                 schema=PromptChoice,
