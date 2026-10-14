@@ -94,10 +94,7 @@ def build_output(payload, recommendation, model, reasoning, request):
         "decision": "block",
         "reason": (
             f"{recommendation}\n\n"
-            "Your prompt is paused. To use these settings, select the recommended model and "
-            "reasoning level, then reply ‘Proceed’. To continue with your current settings, "
-            "reply ‘Proceed with current settings’. Your original prompt is saved, so you "
-            "do not need to repeat it."
+            "It is recommended that a more appropriate model is selected for this task before proceeding."
         ),
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
