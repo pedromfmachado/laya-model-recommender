@@ -25,10 +25,14 @@ def read_request():
     return payload, prompt.replace("\r\n", "\n").replace("\r", "\n").strip()
 
 
-def claim_session(session_id):
+def session_marker(session_id):
     state_dir = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "model-routing" / "sessions"
     state_dir.mkdir(parents=True, exist_ok=True)
-    marker = state_dir / hashlib.sha256(session_id.encode()).hexdigest()
+    return state_dir / hashlib.sha256(session_id.encode()).hexdigest()
+
+
+def claim_session(session_id):
+    marker = session_marker(session_id)
     try:
         marker.touch(exist_ok=False)
     except FileExistsError:
@@ -81,12 +85,15 @@ def build_output(recommendation, request):
 def main():
     try:
         payload, request = read_request()
-        if not claim_session(payload["session_id"]):
+        marker = session_marker(payload["session_id"])
+        if marker.exists():
             output = {}
         else:
             config, capability, effort = classify(request)
             recommendation = format_recommendation(config, capability, effort)
             output = build_output(recommendation, request)
+            if not claim_session(payload["session_id"]):
+                output = {}
     except Exception as error:
         output = {"systemMessage": (
             f"Model recommendation failed: {type(error).__name__}: {error}. "
