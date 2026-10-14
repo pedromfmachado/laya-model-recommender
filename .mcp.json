@@ -3,7 +3,10 @@
     "model_recommender": {
       "type": "stdio",
       "command": "sh",
-      "args": ["${PLUGIN_ROOT}/runtime.sh", "mcp"]
+      "args": [
+        "-c",
+        "root=$CODEX_HOME; [ -n \"$root\" ] || root=$HOME/.codex; exec sh \"$root/model-recommender/plugin/runtime.sh\" mcp"
+      ]
     }
   }
 }

@@ -3,6 +3,7 @@ set -eu
 
 plugin_root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 data_dir="${CODEX_HOME:-$HOME/.codex}/model-recommender"
+plugin_data_dir="$data_dir/plugin"
 export UV_CACHE_DIR="$data_dir/cache"
 export UV_PYTHON_INSTALL_DIR="$data_dir/python"
 export HF_HOME="$data_dir/models"
@@ -24,9 +25,13 @@ case "${1:-mcp}" in
             "$data_dir/bin/uv" --no-config venv --managed-python --python 3.12 "$data_dir/venv"
         fi
         printf '%s\n' 'Installing the classifier…'
-        "$data_dir/bin/uv" --no-config pip install --python "$python" 'laya==0.4.0' 'mcp==1.12.4'
+        # MCP 1.12.4 imports a Pydantic private helper removed in 2.14.
+        "$data_dir/bin/uv" --no-config pip install --python "$python" 'laya==0.4.0' 'mcp==1.12.4' 'pydantic<2.14'
         printf '%s\n' 'Downloading the model (the first download can take a few minutes)…'
         HF_HUB_OFFLINE=0 TRANSFORMERS_OFFLINE=0 "$python" -c "from laya import Router; Router().preload(['english'])"
+        mkdir -p "$plugin_data_dir"
+        cp "$plugin_root/runtime.sh" "$plugin_root/mcp_server.py" "$plugin_root/hook.py" \
+            "$plugin_root/router.json" "$plugin_root/questions.json" "$plugin_data_dir/"
         touch "$data_dir/ready"
         printf '%s\n' 'Model Recommender setup complete. Trust the hook in Codex, then start a new chat.'
         ;;

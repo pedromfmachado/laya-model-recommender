@@ -1,8 +1,7 @@
 """Local MCP tool used by the synchronous prompt-submit hook."""
 import logging
-from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from mcp.server.fastmcp import FastMCP, Context
 
 from hook import claim_session, classify, compare_model, format_recommendation, session_marker
@@ -11,9 +10,18 @@ logging.basicConfig(level=logging.WARNING)
 mcp = FastMCP("model-recommender")
 
 
+def _remove_schema_title(schema):
+    schema.pop("title", None)
+
+
 class PromptChoice(BaseModel):
-    action: Literal["proceed_with_current_settings", "cancel_and_change_settings"] = Field(
-        description="Proceed with the current selections, or cancel this prompt to change them manually."
+    model_config = ConfigDict(json_schema_extra=_remove_schema_title)
+
+    action: str = Field(
+        description="Proceed with the current selections, or cancel this prompt to change them manually.",
+        json_schema_extra={
+            "enum": ["proceed_with_current_settings", "cancel_and_change_settings"]
+        },
     )
 
 

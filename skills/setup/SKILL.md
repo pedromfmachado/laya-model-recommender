@@ -9,4 +9,4 @@ Execute `sh /absolute/path/to/runtime.sh setup`. The script downloads uv, privat
 
 If the command fails, report the concrete error and resolve it within this setup's scope. Do not claim setup succeeded until the script exits successfully and prints `Model Recommender setup complete`.
 
-After success, direct the user to review and trust the hook in Codex's Hooks settings (or `/hooks` in the CLI), then start a new chat. Keep the explanation brief. When the recommendation differs, the hook offers continuing with current settings or cancelling the prompt so the user can change settings manually and resubmit. Leave model and reasoning selection to the user.
+After success, direct the user to review and trust the hook in Codex's Hooks settings (or `/hooks` in the CLI), then start a new chat. Rerun setup after plugin updates so the local MCP runtime bundle is refreshed; the existing Python runtime and model cache are reused. Keep the explanation brief. When the recommendation differs, the hook offers continuing with current settings or cancelling the prompt so the user can change settings manually and resubmit. Leave model and reasoning selection to the user.

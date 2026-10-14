@@ -33,7 +33,7 @@ codex plugin marketplace upgrade model-recommender-plugins
 codex plugin add model-recommender@model-recommender-plugins
 ```
 
-Reopen Codex, review and trust the updated hook if prompted, then start a new chat. Your existing runtime and model are reused; rerun setup if the plugin requests it.
+Reopen Codex, review and trust the updated hook if prompted, then run Model Recommender setup again from plugin settings before starting a new chat. Setup refreshes the local MCP runtime bundle and reuses the existing Python runtime and model cache.
 
 ## Configuration
 
