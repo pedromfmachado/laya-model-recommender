@@ -4,8 +4,14 @@
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "sh \"${PLUGIN_ROOT}/runtime.sh\" hook",
+            "type": "mcp_tool",
+            "server": "model_recommender",
+            "tool": "recommend_for_prompt",
+            "input": {
+              "prompt": "${prompt}",
+              "session_id": "${session_id}",
+              "model": "${model}"
+            },
             "timeout": 60,
             "statusMessage": "Recommending a model for this task"
           }

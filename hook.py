@@ -73,56 +73,10 @@ def format_recommendation(config, capability, effort):
     ), model, reasoning
 
 
-def build_output(payload, recommendation, model, reasoning, request):
+def compare_model(payload, model):
     selected_model = normalize_setting(payload.get("model"))
-    reasoning_setting = payload.get("reasoning")
-    selected_reasoning = normalize_setting(payload.get("reasoning_effort")) or normalize_setting(
-        reasoning_setting.get("effort") if isinstance(reasoning_setting, dict) else reasoning_setting
+    recommended_model = normalize_setting(model)
+    return (
+        selected_model is not None and selected_model != recommended_model,
+        selected_model == recommended_model,
     )
-    selected_reasoning = {"low": "light", "xhigh": "extra-high"}.get(
-        selected_reasoning, selected_reasoning
-    )
-    model_differs = selected_model is not None and selected_model != normalize_setting(model)
-    reasoning_differs = selected_reasoning is not None and selected_reasoning != normalize_setting(reasoning)
-
-    if not model_differs and not reasoning_differs:
-        if selected_model == normalize_setting(model) and selected_reasoning == normalize_setting(reasoning):
-            recommendation += "\n\nYour current model and reasoning level match this recommendation."
-        return {"systemMessage": recommendation}
-
-    return {
-        "decision": "block",
-        "reason": (
-            f"{recommendation}\n\n"
-            "It is recommended that a more appropriate model is selected for this task before proceeding."
-        ),
-        "hookSpecificOutput": {
-            "hookEventName": "UserPromptSubmit",
-            "additionalContext": f"Original user prompt:\n{request}",
-        },
-    }
-
-
-def main():
-    try:
-        payload, request = read_request()
-        marker = session_marker(payload["session_id"])
-        if marker.exists():
-            output = {}
-        else:
-            config, capability, effort = classify(request)
-            recommendation, model, reasoning = format_recommendation(config, capability, effort)
-            output = build_output(payload, recommendation, model, reasoning, request)
-            if not claim_session(payload["session_id"]):
-                output = {}
-    except Exception as error:
-        output = {"systemMessage": (
-            f"Model recommendation failed: {type(error).__name__}: {error}. "
-            "The task will continue using the current settings. Rerun setup if a dependency "
-            "or classifier checkpoint is missing."
-        )}
-    print(json.dumps(output))
-
-
-if __name__ == "__main__":
-    main()

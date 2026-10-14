@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "model_recommender": {
+      "type": "stdio",
+      "command": "sh",
+      "args": ["${PLUGIN_ROOT}/runtime.sh", "mcp"]
+    }
+  }
+}

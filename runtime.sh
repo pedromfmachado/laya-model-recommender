@@ -8,7 +8,7 @@ export UV_PYTHON_INSTALL_DIR="$data_dir/python"
 export HF_HOME="$data_dir/models"
 python="$data_dir/venv/bin/python"
 
-case "${1:-hook}" in
+case "${1:-mcp}" in
     setup)
         mkdir -p "$data_dir"
         if [ ! -x "$data_dir/bin/uv" ]; then
@@ -24,20 +24,21 @@ case "${1:-hook}" in
             "$data_dir/bin/uv" --no-config venv --managed-python --python 3.12 "$data_dir/venv"
         fi
         printf '%s\n' 'Installing the classifier…'
-        "$data_dir/bin/uv" --no-config pip install --python "$python" 'laya==0.4.0'
+        "$data_dir/bin/uv" --no-config pip install --python "$python" 'laya==0.4.0' 'mcp==1.12.4'
         printf '%s\n' 'Downloading the model (the first download can take a few minutes)…'
         HF_HUB_OFFLINE=0 TRANSFORMERS_OFFLINE=0 "$python" -c "from laya import Router; Router().preload(['english'])"
         touch "$data_dir/ready"
         printf '%s\n' 'Model Recommender setup complete. Trust the hook in Codex, then start a new chat.'
         ;;
-    hook)
+    mcp)
         if [ -f "$data_dir/ready" ] && [ -x "$python" ]; then
-            exec "$python" -B "$plugin_root/hook.py"
+            exec "$python" -B "$plugin_root/mcp_server.py"
         fi
-        printf '%s\n' '{"systemMessage":"Run Model Recommender setup from the plugin settings, or ask Codex to set up Model Recommender, then start a new chat. The task will continue using the current settings."}'
+        printf '%s\n' 'Model Recommender is not set up. Run setup from plugin settings.' >&2
+        exit 1
         ;;
     *)
-        printf '%s\n' 'Usage: sh runtime.sh [setup|hook]' >&2
+        printf '%s\n' 'Usage: sh runtime.sh [setup|mcp]' >&2
         exit 2
         ;;
 esac

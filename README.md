@@ -20,7 +20,7 @@ Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI)
 
 Submit a prompt in a new chat. The recommendation includes the suggested model and reasoning level, plus the selected capability and reasoning demand labels.
 
-- On the first prompt in each session, the hook blocks only when the recommended model or reasoning level differs from your current selection. It recommends selecting a more appropriate model for the task before proceeding. If your current selections already match, the prompt continues with a matching recommendation message.
+- On the first prompt in each session, if the recommended model differs from your selected model, Codex asks whether to continue with the current settings or cancel this prompt. Choose cancel to change settings manually and resubmit. If your selected model matches, the prompt continues with a matching recommendation message.
 
 Recommendations run once per session, including resumed chats. The plugin leaves model and reasoning selection to you.
 
