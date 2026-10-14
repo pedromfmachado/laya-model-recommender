@@ -11,6 +11,12 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
 
+def normalize_setting(value):
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return "-".join(value.lower().replace("_", " ").replace("-", " ").split())
+
+
 def read_request():
     payload = json.load(sys.stdin)
     if payload.get("hook_event_name", "UserPromptSubmit") != "UserPromptSubmit":
@@ -64,16 +70,34 @@ def format_recommendation(config, capability, effort):
         f"Recommended: {model} · {reasoning}\n"
         f"Capability: {capability.replace('_', ' ').capitalize()}\n"
         f"Reasoning: {effort.replace('_', ' ').capitalize()}"
+    ), model, reasoning
+
+
+def build_output(payload, recommendation, model, reasoning, request):
+    selected_model = normalize_setting(payload.get("model"))
+    reasoning_setting = payload.get("reasoning")
+    selected_reasoning = normalize_setting(payload.get("reasoning_effort")) or normalize_setting(
+        reasoning_setting.get("effort") if isinstance(reasoning_setting, dict) else reasoning_setting
     )
+    selected_reasoning = {"low": "light", "xhigh": "extra-high"}.get(
+        selected_reasoning, selected_reasoning
+    )
+    model_differs = selected_model is not None and selected_model != normalize_setting(model)
+    reasoning_differs = selected_reasoning is not None and selected_reasoning != normalize_setting(reasoning)
 
+    if not model_differs and not reasoning_differs:
+        if selected_model == normalize_setting(model) and selected_reasoning == normalize_setting(reasoning):
+            recommendation += "\n\nYour current model and reasoning level match this recommendation."
+        return {"systemMessage": recommendation}
 
-def build_output(recommendation, request):
     return {
         "decision": "block",
         "reason": (
             f"{recommendation}\n\n"
-            "Ask the user whether to proceed with the original request using current settings. "
-            "If they proceed, continue with the original request in the added context."
+            "Your prompt is paused. To use these settings, select the recommended model and "
+            "reasoning level, then reply ‘Proceed’. To continue with your current settings, "
+            "reply ‘Proceed with current settings’. Your original prompt is saved, so you "
+            "do not need to repeat it."
         ),
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
@@ -90,8 +114,8 @@ def main():
             output = {}
         else:
             config, capability, effort = classify(request)
-            recommendation = format_recommendation(config, capability, effort)
-            output = build_output(recommendation, request)
+            recommendation, model, reasoning = format_recommendation(config, capability, effort)
+            output = build_output(payload, recommendation, model, reasoning, request)
             if not claim_session(payload["session_id"]):
                 output = {}
     except Exception as error:
