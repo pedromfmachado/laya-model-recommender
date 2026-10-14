@@ -3,10 +3,9 @@
     "model_recommender": {
       "type": "stdio",
       "command": "sh",
-      "args": [
-        "-c",
-        "root=$CODEX_HOME; [ -n \"$root\" ] || root=$HOME/.codex; exec sh \"$root/model-recommender/plugin/runtime.sh\" mcp"
-      ]
+      "startup_timeout_sec": 900,
+      "args": ["runtime.sh", "mcp"],
+      "cwd": "./"
     }
   }
 }

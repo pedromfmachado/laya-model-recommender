@@ -9,12 +9,17 @@ Requires the Codex CLI with hook plugin support on macOS or Linux. Run these com
 ```sh
 codex plugin marketplace add pedromfmachado/laya-model-recommender
 codex plugin add model-recommender@model-recommender-plugins
-sh "$HOME/.codex/plugins/cache/model-recommender-plugins/model-recommender/0.0.1/runtime.sh" setup
 ```
 
-Setup downloads a private Python runtime, classifier, and model automatically. No Homebrew or Python installation is needed. The first setup requires internet access and can take a few minutes; recommendations then run locally and offline.
+The first local MCP startup downloads a private Python runtime, classifier, and model automatically. No Homebrew or Python installation is needed. The first setup requires internet access and can take several minutes; Codex allows up to 15 minutes for this initial startup. Later recommendations run locally and offline.
 
-Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI), then start a new chat. If you use a custom `CODEX_HOME`, replace `$HOME/.codex` in the setup command with that directory.
+Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI), then start a new chat. If you use a custom `CODEX_HOME`, Codex uses that directory for its plugin cache and Model Recommender data.
+
+If automatic setup fails, rerun it manually from Terminal using the installed plugin path:
+
+```sh
+sh "${CODEX_HOME:-$HOME/.codex}/plugins/cache/model-recommender-plugins/model-recommender/0.0.1/runtime.sh" setup
+```
 
 ## Use
 
@@ -33,7 +38,7 @@ codex plugin marketplace upgrade model-recommender-plugins
 codex plugin add model-recommender@model-recommender-plugins
 ```
 
-Reopen Codex, review and trust the updated hook if prompted, then run Model Recommender setup again from plugin settings before starting a new chat. Setup refreshes the local MCP runtime bundle and reuses the existing Python runtime and model cache.
+Reopen Codex and start a new chat. The local MCP server checks its installed plugin files and automatically refreshes setup when they change, reusing the existing Python runtime and model cache. If startup setup fails, use the manual recovery command in the Install section, then start a new chat.
 
 ## Configuration
 
