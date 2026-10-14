@@ -20,7 +20,7 @@ Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI)
 
 Submit a prompt in a new chat. The recommendation includes the suggested model and reasoning level, plus the selected capability and reasoning demand labels.
 
-- On the first prompt in each session, the hook instructs Codex to post the recommendation as a normal assistant message, then ask you to choose **Proceed** before acting. Proceed continues the original request with the current settings.
+- On the first prompt in each session, the hook blocks it and asks whether to proceed with the recommendation using current settings. If you proceed, Codex continues with your original prompt, so you do not need to repeat it.
 
 Recommendations run once per session, including resumed chats. The plugin leaves model and reasoning selection to you.
 

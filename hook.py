@@ -11,16 +11,6 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
 
-def recommendation_context(recommendation):
-    return (
-        "STOP: Before acting, send this recommendation as a normal assistant message:\n\n"
-        f"{recommendation}\n\n"
-        "Then ask 'Proceed with the original request using current settings?' via "
-        "request_user_input_async with exactly one option: Proceed. Wait for the user's choice "
-        "before continuing. Do not ask the user to repeat the request."
-    )
-
-
 def read_request():
     payload = json.load(sys.stdin)
     if payload.get("hook_event_name", "UserPromptSubmit") != "UserPromptSubmit":
@@ -73,11 +63,17 @@ def format_recommendation(config, capability, effort):
     )
 
 
-def build_output(recommendation):
+def build_output(recommendation, request):
     return {
+        "decision": "block",
+        "reason": (
+            f"{recommendation}\n\n"
+            "Ask the user whether to proceed with the original request using current settings. "
+            "If they proceed, continue with the original request in the added context."
+        ),
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
-            "additionalContext": recommendation_context(recommendation),
+            "additionalContext": f"Original user prompt:\n{request}",
         },
     }
 
@@ -90,7 +86,7 @@ def main():
         else:
             config, capability, effort = classify(request)
             recommendation = format_recommendation(config, capability, effort)
-            output = build_output(recommendation)
+            output = build_output(recommendation, request)
     except Exception as error:
         output = {"systemMessage": (
             f"Model recommendation failed: {type(error).__name__}: {error}. "
