@@ -27,9 +27,9 @@ Submit a prompt in a new chat. On the first prompt in a thread, the hook shows i
 
 - If the recommended model differs from your current model, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** Choosing the second option blocks the prompt but keeps the original request in context. After changing settings, send a short follow-up, such as “Continue,” to resume it. If your model matches, the prompt continues with a short confirmation.
 
-Model recommendations run on the first valid prompt in a session tree, including resumed chats, when Codex can resolve a unique root thread. Reasoning recommendations run on every prompt when Codex can resolve the active setting. If the reasoning level differs, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** The plugin leaves model and reasoning selection to you.
+Model recommendations run on the first valid prompt in a session tree, including resumed chats. Reasoning recommendations are checked on every prompt when Codex can resolve the active setting, and are shown only when the recommended level differs. If the active reasoning setting is unavailable, the first-prompt model recommendation can still appear, but the reasoning comparison is skipped. The plugin leaves model and reasoning selection to you.
 
-If the session contains forked threads or Codex cannot resolve the active thread's setting, the hook continues without a recommendation.
+Forked threads share model eligibility with their session tree, so they do not get an independent first-prompt model recommendation.
 
 ## Upgrade
 

@@ -65,19 +65,23 @@ async def recommend_for_prompt(
 ) -> dict:
     """Recommend a model on the first prompt and check reasoning on every prompt."""
     thread_id = None
+    state_thread_id = None
     try:
         if not prompt.strip() or not session_id.strip():
             raise ValueError("Missing prompt or session id")
         first_session_prompt = claim_thread(session_id)
         thread_id, current_reasoning = active_thread_settings(session_id, model)
-        first_prompt = bool(first_session_prompt and thread_id)
-        pending_request = read_pending_request(thread_id) if thread_id else None
+        state_thread_id = thread_id or session_id
+        # Model eligibility comes from the first prompt marker; resolving active
+        # reasoning is only needed to decide whether a reasoning change applies.
+        first_prompt = first_session_prompt
+        pending_request = read_pending_request(state_thread_id)
         if pending_request and continuation_prompt(prompt):
             request_to_classify = pending_request
         else:
             request_to_classify = prompt.strip()
             if pending_request:
-                clear_pending_request(thread_id)
+                clear_pending_request(state_thread_id)
         config, model_tier, reasoning_level = classify(
             request_to_classify, include_model=first_prompt
         )
@@ -122,11 +126,9 @@ async def recommend_for_prompt(
             answer.action == "accept"
             and answer.data.action == "Use my current settings for this prompt."
         ):
-            if thread_id:
-                clear_pending_request(thread_id)
+            clear_pending_request(state_thread_id)
             return hook_output(system_message="Continuing with current settings.")
-        if thread_id:
-            save_pending_request(thread_id, request_to_classify)
+        save_pending_request(state_thread_id, request_to_classify)
         return hook_output(
             decision="block",
             reason=(
@@ -141,9 +143,9 @@ async def recommend_for_prompt(
             ),
         )
     except Exception as error:
-        if thread_id:
+        if state_thread_id:
             try:
-                clear_pending_request(thread_id)
+                clear_pending_request(state_thread_id)
             except OSError:
                 logging.exception("Failed to clear pending request")
         logging.exception("Model recommendation failed")
