@@ -1,6 +1,6 @@
 # Model Recommender
 
-A Codex plugin that uses the local Laya classifier to recommend a model tier and reasoning effort for the first prompt in each session. It classifies task definition and reasoning demand independently, with a policy that favors **GPT-6 Luna · Medium** for straightforward work.
+A Codex plugin that uses the local Laya classifier to recommend a model tier on the first prompt in each thread and check reasoning effort on every prompt. It classifies task definition and reasoning demand independently, with a policy that favors **GPT-6 Luna · Medium** for straightforward work.
 
 ## Install
 
@@ -23,11 +23,13 @@ sh "${CODEX_HOME:-$HOME/.codex}/plugins/cache/model-recommender-plugins/model-re
 
 ## Use
 
-Submit a prompt in a new chat. On the first prompt in a session, the hook shows its recommended model and reasoning level.
+Submit a prompt in a new chat. On the first prompt in a thread, the hook shows its recommended model and reasoning level. On every prompt, it checks whether the recommended reasoning level differs from the active setting.
 
 - If the recommended model differs from your current model, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** Choosing the second option blocks the prompt but keeps the original request in context. After changing settings, send a short follow-up, such as “Continue,” to resume it. If your model matches, the prompt continues with a short confirmation.
 
-Recommendations run once per session, including resumed chats. The plugin leaves model and reasoning selection to you.
+Model recommendations run on the first valid prompt in a session tree, including resumed chats, when Codex can resolve a unique root thread. Reasoning recommendations run on every prompt when Codex can resolve the active setting. If the reasoning level differs, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** The plugin leaves model and reasoning selection to you.
+
+If the session contains forked threads or Codex cannot resolve the active thread's setting, the hook continues without a recommendation.
 
 ## Upgrade
 
