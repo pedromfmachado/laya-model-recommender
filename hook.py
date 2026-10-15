@@ -66,8 +66,8 @@ def classify(request):
     if result["usage"]["truncated"]:
         raise ValueError("Prompt did not fit the classifier")
 
-    model_tier = result["answers"]["model_tier"]["choice"]
-    reasoning_level = result["answers"]["reasoning_level"]["choice"]
+    model_tier = result["answers"]["openai_model_tier"]["choice"]
+    reasoning_level = result["answers"]["reasoning_effort_level"]["choice"]
     return config, model_tier, reasoning_level
 
 

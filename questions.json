@@ -1,22 +1,22 @@
 {
   "questions": [
     {
-      "id": "model_tier",
+      "id": "openai_model_tier",
       "type": "choice",
-      "prompt": "Select the model tier required for this prompt based on scope and execution environment:",
+      "prompt": "Evaluate whether the task is explicitly well-defined, or if it involves ambiguity, missing context, and complex problem solving:",
       "options": {
-        "luna": "Self-contained, bounded task, single file/component, direct Q&A, or straightforward transformation.",
-        "sol": "Multi-file/repository scope, agentic tool iteration, open-ended investigation, or system architecture."
+        "luna": "Explicitly defined tasks, direct execution, translation, formatting, standard code generation, or routine Q&A.",
+        "sol": "Ambiguous instructions, finding unstructured information, handling gaps in context, complex logic puzzles, or multi-step planning."
       }
     },
     {
-      "id": "reasoning_level",
+      "id": "reasoning_effort_level",
       "type": "choice",
-      "prompt": "Select the minimum reasoning effort level required to complete the task accurately:",
+      "prompt": "Select the required internal reasoning effort based on task complexity, speed constraints, and correctness requirements:",
       "options": {
-        "mid": "Direct instruction, standard logic, routine edits, or simple context validation.",
-        "high": "Moderate constraint satisfaction, multi-step verification, or edge-case handling.",
-        "extra_high": "Deep architectural reasoning, concurrency/race-condition diagnosis, or complex system invariants."
+        "mid": "Straightforward, context-rich tasks (e.g., minor code fixes), short rewrites, or tasks prioritizing real-time speed.",
+        "high": "Everyday coding, data transformations, document drafting, and moderately complex logical steps.",
+        "extra_high": "Complex debugging, subtle edge-cases, deep algorithmic proofs, or tasks where maximum correctness is critical."
       }
     }
   ]

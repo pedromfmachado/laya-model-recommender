@@ -1,6 +1,6 @@
 # Model Recommender
 
-A Codex plugin that uses the local Laya classifier to recommend a model tier and reasoning level for the first prompt in each session. It classifies task scope and reasoning demand independently, with a policy that favors **GPT-6 Luna · Medium** for bounded work.
+A Codex plugin that uses the local Laya classifier to recommend a model tier and reasoning effort for the first prompt in each session. It classifies task definition and reasoning demand independently, with a policy that favors **GPT-6 Luna · Medium** for straightforward work.
 
 ## Install
 
@@ -44,7 +44,7 @@ Reopen Codex and start a new chat. The local MCP server checks its installed plu
 
 Edit the plugin's JSON files to customize recommendations:
 
-- `questions.json` defines the `model_tier` and `reasoning_level` choice questions, prompts, and option descriptions.
+- `questions.json` defines the `openai_model_tier` and `reasoning_effort_level` choice questions, prompts, and option descriptions.
 - `router.json` defines the inference device, `questions_file`, `model_mapping`, and `reasoning_mapping`. Relative question-file paths resolve from the plugin directory.
 
 The default mappings are:
