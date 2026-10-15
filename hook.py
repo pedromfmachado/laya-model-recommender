@@ -81,16 +81,9 @@ def continuation_prompt(prompt):
 
 def classify(request, include_model=True):
     config = json.loads(Path(__file__).with_name("router.json").read_text())
-    question_config = json.loads((Path(__file__).parent / config["questions_file"]).read_text())
-    questions = {
-        question["id"]: {
-            "type": question["type"],
-            "instructions": question["prompt"],
-            "criteria": question["options"],
-        }
-        for question in question_config["questions"]
-        if include_model or question["id"] == "reasoning_effort_level"
-    }
+    questions = json.loads((Path(__file__).parent / config["questions_file"]).read_text())
+    if not include_model:
+        questions = {"effort": questions["effort"]}
     from laya import Router
 
     result = Router(
@@ -100,16 +93,14 @@ def classify(request, include_model=True):
     if result["usage"]["truncated"]:
         raise ValueError("Prompt did not fit the classifier")
 
-    model_tier = (
-        result["answers"]["openai_model_tier"]["choice"] if include_model else None
-    )
-    reasoning_level = result["answers"]["reasoning_effort_level"]["choice"]
-    return config, model_tier, reasoning_level
+    capability = result["answers"]["capability"]["choice"] if include_model else None
+    effort = result["answers"]["effort"]["choice"]
+    return config, capability, effort
 
 
-def format_recommendation(config, model_tier, reasoning_level):
-    model = config["model_mapping"][model_tier]
-    reasoning = config["reasoning_mapping"][reasoning_level]
+def format_recommendation(config, capability, effort):
+    model = config["model_mapping"][capability]
+    reasoning = config["reasoning_mapping"][effort]
     return f"Recommended: {model} · {reasoning}", model, reasoning
 
 

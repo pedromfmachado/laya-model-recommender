@@ -82,18 +82,18 @@ async def recommend_for_prompt(
             request_to_classify = prompt.strip()
             if pending_request:
                 clear_pending_request(state_thread_id)
-        config, model_tier, reasoning_level = classify(
+        config, capability, effort = classify(
             request_to_classify, include_model=first_prompt
         )
         suggested_model = None
         if first_prompt:
             recommendation, suggested_model, suggested_reasoning = format_recommendation(
-                config, model_tier, reasoning_level
+                config, capability, effort
             )
             model_differs, model_matches = compare_model({"model": model}, suggested_model)
         else:
             model_differs, model_matches = False, False
-            suggested_reasoning = config["reasoning_mapping"][reasoning_level]
+            suggested_reasoning = config["reasoning_mapping"][effort]
             recommendation = None
 
         reasoning_differs = compare_reasoning(current_reasoning, suggested_reasoning)

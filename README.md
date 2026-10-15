@@ -1,6 +1,6 @@
 # Model Recommender
 
-A Codex plugin that uses the local Laya classifier to recommend a model tier on the first prompt in each thread and check reasoning effort on every prompt. It classifies task definition and reasoning demand independently, with a policy that favors **GPT-6 Luna · Medium** for straightforward work.
+A Codex plugin that uses the local Laya classifier to recommend a model and reasoning level on the first prompt in each thread and check reasoning effort on every prompt. It classifies model tier and reasoning demand independently, with a policy that favors **GPT-6 Luna · Medium** for bounded work.
 
 ## Install
 
@@ -46,7 +46,7 @@ Reopen Codex and start a new chat. The local MCP server checks its installed plu
 
 Edit the plugin's JSON files to customize recommendations:
 
-- `questions.json` defines the `openai_model_tier` and `reasoning_effort_level` choice questions, prompts, and option descriptions.
+- `questions.json` defines the `capability` and `effort` choice questions, instructions, and option labels.
 - `router.json` defines the inference device, `questions_file`, `model_mapping`, and `reasoning_mapping`. Relative question-file paths resolve from the plugin directory.
 
 The default mappings are:
@@ -56,13 +56,13 @@ The default mappings are:
 | Luna | GPT-6 Luna |
 | Sol | GPT-6.1 Sol |
 
-| Reasoning level | Recommended setting |
+| Reasoning tier | Recommended setting |
 | --- | --- |
 | Mid | Medium |
 | High | High |
 | Extra High | Extra High |
 
-Each question uses `type: "choice"`, a prompt, and option descriptions. Every model tier option needs an entry in `model_mapping`; every reasoning level option needs an entry in `reasoning_mapping`.
+Each question must use `type: "choice"` with nonempty instructions and option labels. Every capability option needs an entry in `model_mapping`; every effort option needs an entry in `reasoning_mapping`.
 
 For a component overview and the startup-to-prompt communication flow, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
