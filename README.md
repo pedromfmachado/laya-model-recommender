@@ -11,7 +11,7 @@ codex plugin marketplace add pedromfmachado/laya-model-recommender
 codex plugin add model-recommender@model-recommender-plugins
 ```
 
-Setup runs automatically when the local MCP server starts for the first time. It downloads a private Python runtime, the classifier, and its model. No separate setup command, Homebrew, or Python installation is needed. The initial setup requires internet access and can take several minutes; Codex allows up to 15 minutes for startup. Later recommendations run locally and offline.
+First startup requires internet access and can take several minutes. You do not need to install Python or Homebrew.
 
 Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI), then start a new chat. If you use a custom `CODEX_HOME`, Codex uses that directory for its plugin cache and Model Recommender data.
 
@@ -32,7 +32,7 @@ codex plugin marketplace upgrade model-recommender-plugins
 codex plugin add model-recommender@model-recommender-plugins
 ```
 
-Reopen Codex and start a new chat. At startup, the MCP server checks whether setup needs refreshing and reuses the existing Python runtime and model cache when possible. If automatic setup fails, see [Troubleshooting](#troubleshooting).
+Reopen Codex and start a new chat. If setup fails, see [Troubleshooting](#troubleshooting).
 
 ## Configuration
 
@@ -48,6 +48,6 @@ Reinstall or refresh the plugin to apply changes, then start a new chat.
 
 ## Troubleshooting
 
-Setup normally runs automatically when the MCP server starts. If setup fails or the runtime, classifier dependency, or model checkpoint is unavailable, ask Codex to **set up Model Recommender** to run the bundled recovery step. Runtime files and the model checkpoint are stored under `${CODEX_HOME:-$HOME/.codex}/model-recommender`.
+If setup fails or the runtime, classifier dependency, or model checkpoint is unavailable, ask Codex to **set up Model Recommender** to run the bundled recovery step. Runtime files and the model checkpoint are stored under `${CODEX_HOME:-$HOME/.codex}/model-recommender`.
 
 If a recommendation fails, Codex continues with the current settings. Start a new chat after fixing setup or configuration to retry.
