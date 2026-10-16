@@ -23,10 +23,7 @@ The plugin leaves model and reasoning selection to you. See [ARCHITECTURE.md](AR
 
 ## Demo
 
-<video controls width="720">
-  <source src="https://raw.githubusercontent.com/pedromfmachado/laya-model-recommender/main/media/model-recommender-demo.mp4" type="video/mp4">
-  Your browser does not support embedded video. [Open the demo](media/model-recommender-demo.mp4).
-</video>
+<video src="media/model-recommender-demo.mp4" width="600" controls></video>
 
 ## Upgrade
 
