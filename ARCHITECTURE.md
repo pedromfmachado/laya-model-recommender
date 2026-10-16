@@ -17,40 +17,24 @@ Model Recommender runs a local classifier before Codex sends the first prompt in
 ```mermaid
 sequenceDiagram
     actor User
-    participant Codex as Codex host and UI
-    participant Runtime as Plugin runtime
-    participant MCP as Recommender MCP server
-    participant Laya as Local Laya classifier
-
-    Codex->>Runtime: Start stdio MCP server
-    Runtime->>Runtime: Check setup readiness and source fingerprint
-    opt Setup missing or stale
-        Runtime->>Laya: Install dependencies and preload local model
-    end
-    Runtime-->>Codex: MCP server ready
+    participant Codex
+    participant MCP as Recommender
 
     User->>Codex: Submit prompt
-    Codex->>MCP: Hook call with prompt, session ID, and selected model
-    MCP->>MCP: Check first-prompt session marker
-    MCP->>Laya: Classify capability and effort
-    Laya-->>MCP: Capability and reasoning demand
-    MCP->>MCP: Compare recommended model with selected model
+    Codex->>MCP: Check prompt, session, and selected model
 
-    alt No known setting differs
-        MCP-->>Codex: Recommendation or confirmation, do not block
-        Codex->>Codex: Continue submitted prompt
-    else A known setting differs
-        MCP->>Codex: Elicit recommendation and action choices
-        Codex-->>User: Show the question and choices
+    alt No model mismatch or session already handled
+        MCP-->>Codex: Continue, with recommendation or confirmation if applicable
+    else Recommended model differs
+        MCP-->>Codex: Return recommendation and choices
+        Codex-->>User: Ask whether to keep or change settings
         User->>Codex: Choose an action
-        Codex-->>MCP: Return the choice
-        alt Use current settings
-            MCP-->>Codex: Allow prompt to continue
-            Codex->>Codex: Continue submitted prompt
+        Codex->>MCP: Return the choice
+        alt Keep current settings
+            MCP-->>Codex: Continue with current settings
         else Change settings
-            MCP-->>Codex: Block prompt and add original request as context
-            Codex->>Codex: Record context and stop this submission
-            User->>Codex: Change settings and retry the request
+            MCP-->>Codex: Pause prompt and preserve original request as context
+            Codex-->>User: Change settings, then send a short follow-up
         end
     end
 ```
