@@ -11,8 +11,6 @@ codex plugin marketplace add pedromfmachado/laya-model-recommender
 codex plugin add model-recommender@model-recommender-plugins
 ```
 
-First startup requires internet access and can take several minutes. You do not need to install Python or Homebrew.
-
 Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI), then start a new chat. If you use a custom `CODEX_HOME`, Codex uses that directory for its plugin cache and Model Recommender data.
 
 ## Use
