@@ -9,7 +9,7 @@ Before Codex processes a prompt, its `UserPromptSubmit` hook calls the recommend
 | Codex host | Runs the prompt hook, presents the user's choices, and applies the hook result. |
 | `UserPromptSubmit` hook (`hooks.json`) | Calls the recommendation tool before the prompt proceeds and supplies the prompt, session ID, and selected model. |
 | Plugin runtime (`runtime.sh`) | Prepares the private Python runtime, dependencies, and classifier model when needed, then starts the MCP server. |
-| Recommender MCP server (`mcp_server.py`) | Checks whether this is the session's first prompt, runs local classification, compares the recommended model with the selected model, coordinates the user choice, and returns an allow or block result. |
+| Recommender MCP server (`hook.py`) | Checks whether this is the session's first prompt, runs local classification, compares the recommended model with the selected model, coordinates the user choice, and returns an allow or block result. |
 | Local Laya classifier | Predicts capability and reasoning demand from the configured questions. Inference runs locally and offline after setup. |
 | User | Chooses whether to keep current settings or change them. The plugin does not change settings. |
 

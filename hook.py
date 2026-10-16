@@ -9,8 +9,10 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 from mcp.server.fastmcp import FastMCP, Context
 
+# Laya loads the classifier through Hugging Face; these flags prevent model downloads during prompts.
 os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
+# Classification is local, so there is no need to send Hugging Face Hub telemetry.
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
 logging.basicConfig(level=logging.WARNING)
