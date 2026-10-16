@@ -6,16 +6,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from mcp.server.fastmcp import FastMCP, Context
 
 from hook import (
-    active_thread_settings,
-    claim_thread,
+    claim_session,
     classify,
-    clear_pending_request,
     compare_model,
-    compare_reasoning,
-    continuation_prompt,
     format_recommendation,
-    read_pending_request,
-    save_pending_request,
+    session_marker,
 )
 
 logging.basicConfig(level=logging.WARNING)
@@ -63,72 +58,45 @@ async def recommend_for_prompt(
     session_id: str,
     model: str = "",
 ) -> dict:
-    """Recommend a model on the first prompt and check reasoning on every prompt."""
-    thread_id = None
-    state_thread_id = None
+    """Classify the first session prompt and ask what to do when settings differ."""
+    marker = None
     try:
         if not prompt.strip() or not session_id.strip():
             raise ValueError("Missing prompt or session id")
-        first_session_prompt = claim_thread(session_id)
-        thread_id, current_reasoning = active_thread_settings(session_id, model)
-        state_thread_id = thread_id or session_id
-        # Model eligibility comes from the first prompt marker; resolving active
-        # reasoning is only needed to decide whether a reasoning change applies.
-        first_prompt = first_session_prompt
-        pending_request = read_pending_request(state_thread_id)
-        if pending_request and continuation_prompt(prompt):
-            request_to_classify = pending_request
-        else:
-            request_to_classify = prompt.strip()
-            if pending_request:
-                clear_pending_request(state_thread_id)
-        config, capability, effort = classify(
-            request_to_classify, include_model=first_prompt
-        )
-        suggested_model = None
-        if first_prompt:
-            recommendation, suggested_model, suggested_reasoning = format_recommendation(
-                config, capability, effort
-            )
-            model_differs, model_matches = compare_model({"model": model}, suggested_model)
-        else:
-            model_differs, model_matches = False, False
-            suggested_reasoning = config["reasoning_mapping"][effort]
-            recommendation = None
-
-        reasoning_differs = compare_reasoning(current_reasoning, suggested_reasoning)
-        if first_prompt and model_differs:
-            prompt_recommendation = f"Recommendation: {suggested_model} · {suggested_reasoning}"
-        elif first_prompt:
-            prompt_recommendation = recommendation
-        else:
-            prompt_recommendation = f"Recommended reasoning: {suggested_reasoning}"
-
-        if not (first_prompt and model_differs) and reasoning_differs is not True:
-            if thread_id:
-                clear_pending_request(thread_id)
-            if first_prompt and model_matches:
-                return hook_output(system_message=(
-                    f"{recommendation}\n\nYour selected model matches this recommendation."
-                ))
-            if first_prompt:
-                return hook_output(system_message=recommendation)
+        marker = session_marker(session_id)
+        if marker.exists():
             return hook_output()
 
-        answer = await ctx.elicit(
-            message=(
-                f"{prompt_recommendation}\n\n"
-                "What would you like to do?"
-            ),
-            schema=PromptChoice,
+        config, capability, effort = classify(prompt.strip())
+        recommendation, suggested_model, suggested_reasoning = format_recommendation(
+            config, capability, effort
         )
+        differs, matches = compare_model({"model": model}, suggested_model)
+        if not claim_session(session_id):
+            return hook_output()
+        if not differs and matches:
+            return hook_output(system_message=(
+                f"{recommendation}\n\nYour selected model matches this recommendation."
+            ))
+        if not differs:
+            return hook_output(system_message=recommendation)
+
+        try:
+            answer = await ctx.elicit(
+                message=(
+                    f"Recommendation: {suggested_model} · {suggested_reasoning}\n\n"
+                    "What would you like to do?"
+                ),
+                schema=PromptChoice,
+            )
+        except Exception:
+            marker.unlink(missing_ok=True)
+            raise
         if (
             answer.action == "accept"
             and answer.data.action == "Use my current settings for this prompt."
         ):
-            clear_pending_request(state_thread_id)
             return hook_output(system_message="Continuing with current settings.")
-        save_pending_request(state_thread_id, request_to_classify)
         return hook_output(
             decision="block",
             reason=(
@@ -139,15 +107,10 @@ async def recommend_for_prompt(
                 "The following is the user's original request, preserved as a JSON string "
                 "because the prompt was blocked while they changed settings. Continue with "
                 "this request when they resume; if they send an updated request, follow that.\n"
-                f"{json.dumps(request_to_classify, ensure_ascii=False)}"
+                f"{json.dumps(prompt.strip(), ensure_ascii=False)}"
             ),
         )
     except Exception as error:
-        if state_thread_id:
-            try:
-                clear_pending_request(state_thread_id)
-            except OSError:
-                logging.exception("Failed to clear pending request")
         logging.exception("Model recommendation failed")
         return hook_output(system_message=(
             f"Model recommendation failed: {type(error).__name__}: {error}. "

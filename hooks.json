@@ -13,7 +13,7 @@
               "model": "${model}"
             },
             "timeout": 60,
-            "statusMessage": "Checking model and reasoning recommendations"
+            "statusMessage": "Recommending a model for this task"
           }
         ]
       }

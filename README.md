@@ -1,6 +1,6 @@
 # Model Recommender
 
-A Codex plugin that uses the local Laya classifier to recommend a model and reasoning level on the first prompt in each thread and check reasoning effort on every prompt. It classifies model tier and reasoning demand independently, with a policy that favors **GPT-6 Luna · Medium** for bounded work.
+A Codex plugin that uses the local Laya classifier to recommend a model and reasoning level on the first prompt in each session. It classifies model tier and reasoning demand together, with a policy that favors **GPT-6 Luna · Medium** for bounded work.
 
 ## Install
 
@@ -23,13 +23,11 @@ sh "${CODEX_HOME:-$HOME/.codex}/plugins/cache/model-recommender-plugins/model-re
 
 ## Use
 
-Submit a prompt in a new chat. On the first prompt in a thread, the hook shows its recommended model and reasoning level. On every prompt, it checks whether the recommended reasoning level differs from the active setting.
+Submit a prompt in a new chat. On the first prompt in a session, the hook shows its recommended model and reasoning level.
 
 - If the recommended model differs from your current model, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** Choosing the second option blocks the prompt but keeps the original request in context. After changing settings, send a short follow-up, such as “Continue,” to resume it. If your model matches, the prompt continues with a short confirmation.
 
-Model recommendations run on the first valid prompt in a session tree, including resumed chats. Reasoning recommendations are checked on every prompt when Codex can resolve the active setting, and are shown only when the recommended level differs. If the active reasoning setting is unavailable, the first-prompt model recommendation can still appear, but the reasoning comparison is skipped. The plugin leaves model and reasoning selection to you.
-
-Forked threads share model eligibility with their session tree, so they do not get an independent first-prompt model recommendation.
+The plugin leaves model and reasoning selection to you.
 
 ## Upgrade
 
