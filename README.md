@@ -23,7 +23,7 @@ The plugin leaves model and reasoning selection to you. See [ARCHITECTURE.md](AR
 
 ## Demo
 
-![](https://github.com/user-attachments/assets/e47d1a72-f7bc-4ca5-98b7-cb600eef30a3)
+<video src="https://github.com/user-attachments/assets/e47d1a72-f7bc-4ca5-98b7-cb600eef30a3" controls />
 
 ## Upgrade
 
