@@ -37,7 +37,7 @@ sequenceDiagram
     MCP->>MCP: Compare recommended model with selected model
 
     alt No known setting differs
-        MCP-->>Codex: Recommendation or confirmation; do not block
+        MCP-->>Codex: Recommendation or confirmation, do not block
         Codex->>Codex: Continue submitted prompt
     else A known setting differs
         MCP->>Codex: Elicit recommendation and action choices
