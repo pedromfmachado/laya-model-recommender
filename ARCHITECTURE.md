@@ -38,6 +38,12 @@ sequenceDiagram
     end
 ```
 
+## Why MCP elicitation
+
+A plain `UserPromptSubmit` hook can block a prompt or add `additionalContext`, which Codex includes as developer context for the model. It does not provide an interactive choice flow. Here, the hook invokes the local MCP server directly: Laya classifies the prompt, and MCP elicitation asks the user for a structured choice through Codex, without an extra model request to classify the task or phrase the question. [Codex hook behavior](https://developers.openai.com/codex/hooks/) · [MCP elicitation](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/client/elicitation.mdx)
+
+When the user chooses to change settings, the server intentionally preserves the original request as context so a short follow-up can resume it.
+
 ## Decision behavior
 
 - The server classifies only the first prompt in a session. It uses the model and reasoning labels from `questions.json` directly, but compares only the recommended model with the selected model.
