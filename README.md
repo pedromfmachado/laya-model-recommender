@@ -21,6 +21,10 @@ Submit a prompt in a new chat. On the first prompt in a session, the hook shows 
 
 The plugin leaves model and reasoning selection to you. See [ARCHITECTURE.md](ARCHITECTURE.md) for component responsibilities and the prompt flow.
 
+## Demo
+
+[Watch the Model Recommender demo](media/model-recommender-demo.mov).
+
 ## Upgrade
 
 Close Codex and run these commands in Terminal to fetch and install the latest version:
