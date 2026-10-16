@@ -23,7 +23,10 @@ The plugin leaves model and reasoning selection to you. See [ARCHITECTURE.md](AR
 
 ## Demo
 
-[Watch the Model Recommender demo](media/model-recommender-demo.mov).
+<video controls width="720">
+  <source src="https://raw.githubusercontent.com/pedromfmachado/laya-model-recommender/main/media/model-recommender-demo.mp4" type="video/mp4">
+  Your browser does not support embedded video. [Open the demo](media/model-recommender-demo.mp4).
+</video>
 
 ## Upgrade
 
@@ -50,6 +53,4 @@ Reinstall or refresh the plugin to apply changes, then start a new chat.
 
 ## Troubleshooting
 
-If setup fails or the runtime, classifier dependency, or model checkpoint is unavailable, ask Codex to **set up Model Recommender** to run the bundled recovery step. Runtime files and the model checkpoint are stored under `${CODEX_HOME:-$HOME/.codex}/model-recommender`.
-
-If a recommendation fails, Codex continues with the current settings. Start a new chat after fixing setup or configuration to retry.
+If a recommendation fails, Codex continues with the current settings. After fixing the issue, submit the prompt again to retry.
