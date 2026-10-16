@@ -9,7 +9,6 @@ from hook import (
     claim_session,
     classify,
     compare_model,
-    format_recommendation,
     session_marker,
 )
 
@@ -68,9 +67,7 @@ async def recommend_for_prompt(
             return hook_output()
 
         suggested_model, suggested_reasoning = classify(prompt.strip())
-        recommendation, suggested_model, suggested_reasoning = format_recommendation(
-            suggested_model, suggested_reasoning
-        )
+        recommendation = f"Recommended: {suggested_model} · {suggested_reasoning}"
         differs, matches = compare_model({"model": model}, suggested_model)
         if not claim_session(session_id):
             return hook_output()

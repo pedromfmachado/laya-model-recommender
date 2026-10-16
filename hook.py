@@ -6,8 +6,10 @@ import os
 import sys
 from pathlib import Path
 
+# Use the cached model only during prompt classification; setup enables downloads explicitly.
 os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
+# Do not send Hugging Face Hub telemetry from the local classifier.
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
 
@@ -15,20 +17,6 @@ def normalize_setting(value):
     if not isinstance(value, str) or not value.strip():
         return None
     return "-".join(value.lower().replace("_", " ").replace("-", " ").split())
-
-
-def read_request():
-    payload = json.load(sys.stdin)
-    if payload.get("hook_event_name", "UserPromptSubmit") != "UserPromptSubmit":
-        raise ValueError("Expected a UserPromptSubmit event")
-
-    session_id = payload["session_id"]
-    prompt = payload["prompt"]
-    if not isinstance(session_id, str) or not session_id.strip():
-        raise ValueError("Missing session id")
-    if not isinstance(prompt, str) or not prompt.strip():
-        raise ValueError("Missing prompt")
-    return payload, prompt.replace("\r\n", "\n").replace("\r", "\n").strip()
 
 
 def session_marker(session_id):
@@ -60,10 +48,6 @@ def classify(request):
     model = result["answers"]["capability"]["choice"]
     reasoning = result["answers"]["effort"]["choice"]
     return model, reasoning
-
-
-def format_recommendation(model, reasoning):
-    return f"Recommended: {model} · {reasoning}", model, reasoning
 
 
 def compare_model(payload, model):

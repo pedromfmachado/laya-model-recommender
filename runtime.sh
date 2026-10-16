@@ -6,6 +6,7 @@ data_dir="${CODEX_HOME:-$HOME/.codex}/model-recommender"
 plugin_data_dir="$data_dir/plugin"
 export UV_CACHE_DIR="$data_dir/cache"
 export UV_PYTHON_INSTALL_DIR="$data_dir/python"
+# Keep the downloaded classifier model in this plugin's persistent data directory.
 export HF_HOME="$data_dir/models"
 python="$data_dir/venv/bin/python"
 lock_dir="$data_dir/setup.lock"
