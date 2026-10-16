@@ -23,7 +23,7 @@ The plugin leaves model and reasoning selection to you. See [ARCHITECTURE.md](AR
 
 ## Demo
 
-<video src="media/model-recommender-demo.mp4" width="600" controls></video>
+<video src="./media/model-recommender-demo.mp4" width="600" controls></video>
 
 ## Upgrade
 
