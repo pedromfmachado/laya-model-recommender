@@ -67,9 +67,9 @@ async def recommend_for_prompt(
         if marker.exists():
             return hook_output()
 
-        config, capability, effort = classify(prompt.strip())
+        suggested_model, suggested_reasoning = classify(prompt.strip())
         recommendation, suggested_model, suggested_reasoning = format_recommendation(
-            config, capability, effort
+            suggested_model, suggested_reasoning
         )
         differs, matches = compare_model({"model": model}, suggested_model)
         if not claim_session(session_id):

@@ -14,7 +14,7 @@ fingerprint() {
     {
         cat "$plugin_root/.codex-plugin/plugin.json"
         cksum "$plugin_root/runtime.sh" "$plugin_root/mcp_server.py" "$plugin_root/hook.py" \
-            "$plugin_root/router.json" "$plugin_root/questions.json"
+            "$plugin_root/questions.json"
     } | cksum | awk '{ print $1 "-" $2 }'
 }
 
@@ -59,8 +59,9 @@ setup_locked() {
     printf '%s\n' 'Downloading the model (the first download can take a few minutes)…'
     HF_HUB_OFFLINE=0 TRANSFORMERS_OFFLINE=0 "$python" -c "from laya import Router; Router().preload(['english'])"
     mkdir -p "$plugin_data_dir"
+    rm -f "$plugin_data_dir/router.json"
     cp "$plugin_root/runtime.sh" "$plugin_root/mcp_server.py" "$plugin_root/hook.py" \
-        "$plugin_root/router.json" "$plugin_root/questions.json" "$plugin_data_dir/"
+        "$plugin_root/questions.json" "$plugin_data_dir/"
     fingerprint > "$data_dir/ready.tmp"
     mv "$data_dir/ready.tmp" "$data_dir/ready"
     printf '%s\n' 'Model Recommender setup complete. Trust the hook in Codex, then start a new chat.'

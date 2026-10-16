@@ -11,15 +11,9 @@ codex plugin marketplace add pedromfmachado/laya-model-recommender
 codex plugin add model-recommender@model-recommender-plugins
 ```
 
-The first local MCP startup downloads a private Python runtime, classifier, and model automatically. No Homebrew or Python installation is needed. The first setup requires internet access and can take several minutes; Codex allows up to 15 minutes for this initial startup. Later recommendations run locally and offline.
+Setup runs automatically when the local MCP server starts for the first time. It downloads a private Python runtime, the classifier, and its model. No separate setup command, Homebrew, or Python installation is needed. The initial setup requires internet access and can take several minutes; Codex allows up to 15 minutes for startup. Later recommendations run locally and offline.
 
 Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI), then start a new chat. If you use a custom `CODEX_HOME`, Codex uses that directory for its plugin cache and Model Recommender data.
-
-If automatic setup fails, rerun it manually from Terminal using the installed plugin path:
-
-```sh
-sh "${CODEX_HOME:-$HOME/.codex}/plugins/cache/model-recommender-plugins/model-recommender/0.0.1/runtime.sh" setup
-```
 
 ## Use
 
@@ -27,7 +21,7 @@ Submit a prompt in a new chat. On the first prompt in a session, the hook shows 
 
 - If the recommended model differs from your current model, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** Choosing the second option blocks the prompt but keeps the original request in context. After changing settings, send a short follow-up, such as “Continue,” to resume it. If your model matches, the prompt continues with a short confirmation.
 
-The plugin leaves model and reasoning selection to you.
+The plugin leaves model and reasoning selection to you. See [ARCHITECTURE.md](ARCHITECTURE.md) for component responsibilities and the prompt flow.
 
 ## Upgrade
 
@@ -38,36 +32,22 @@ codex plugin marketplace upgrade model-recommender-plugins
 codex plugin add model-recommender@model-recommender-plugins
 ```
 
-Reopen Codex and start a new chat. The local MCP server checks its installed plugin files and automatically refreshes setup when they change, reusing the existing Python runtime and model cache. If startup setup fails, use the manual recovery command in the Install section, then start a new chat.
+Reopen Codex and start a new chat. At startup, the MCP server checks whether setup needs refreshing and reuses the existing Python runtime and model cache when possible. If automatic setup fails, see [Troubleshooting](#troubleshooting).
 
 ## Configuration
 
-Edit the plugin's JSON files to customize recommendations:
+Edit `questions.json` to customize recommendation labels and classification guidance:
 
-- `questions.json` defines the `capability` and `effort` choice questions, instructions, and option labels.
-- `router.json` defines the inference device, `questions_file`, `model_mapping`, and `reasoning_mapping`. Relative question-file paths resolve from the plugin directory.
+- `questions.json` defines the `capability` and `effort` choice questions, instructions, and option labels. The labels are the model and reasoning settings shown in the recommendation.
 
-The default mappings are:
+Capability labels use the model names `GPT-6 Luna` and `GPT-6.1 Sol`. Effort labels use the reasoning settings `Medium`, `High`, and `Extra High`.
 
-| Model tier | Model |
-| --- | --- |
-| Luna | GPT-6 Luna |
-| Sol | GPT-6.1 Sol |
-
-| Reasoning tier | Recommended setting |
-| --- | --- |
-| Mid | Medium |
-| High | High |
-| Extra High | Extra High |
-
-Each question must use `type: "choice"` with nonempty instructions and option labels. Every capability option needs an entry in `model_mapping`; every effort option needs an entry in `reasoning_mapping`.
-
-For a component overview and the startup-to-prompt communication flow, see [ARCHITECTURE.md](ARCHITECTURE.md).
+Each question must use `type: "choice"` with nonempty instructions and option labels. Use the exact model names for capability labels and the exact reasoning settings for effort labels.
 
 Reinstall or refresh the plugin to apply changes, then start a new chat.
 
 ## Troubleshooting
 
-If the runtime, classifier dependency, or checkpoint is unavailable, rerun setup from the plugin settings or ask Codex to **set up Model Recommender**. Setup stores its runtime and checkpoint under `${CODEX_HOME:-$HOME/.codex}/model-recommender`.
+Setup normally runs automatically when the MCP server starts. If setup fails or the runtime, classifier dependency, or model checkpoint is unavailable, ask Codex to **set up Model Recommender** to run the bundled recovery step. Runtime files and the model checkpoint are stored under `${CODEX_HOME:-$HOME/.codex}/model-recommender`.
 
 If a recommendation fails, Codex continues with the current settings. Start a new chat after fixing setup or configuration to retry.

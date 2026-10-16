@@ -47,25 +47,22 @@ def claim_session(session_id):
 
 
 def classify(request):
-    config = json.loads(Path(__file__).with_name("router.json").read_text())
-    questions = json.loads((Path(__file__).parent / config["questions_file"]).read_text())
+    questions = json.loads(Path(__file__).with_name("questions.json").read_text())
     from laya import Router
 
     result = Router(
         models={"english": sys.argv[1]} if len(sys.argv) > 1 else None,
-        default="english", device=config["device"],
+        default="english", device="cpu",
     ).predict({"request": request}, questions, model="english")
     if result["usage"]["truncated"]:
         raise ValueError("Prompt did not fit the classifier")
 
-    capability = result["answers"]["capability"]["choice"]
-    effort = result["answers"]["effort"]["choice"]
-    return config, capability, effort
+    model = result["answers"]["capability"]["choice"]
+    reasoning = result["answers"]["effort"]["choice"]
+    return model, reasoning
 
 
-def format_recommendation(config, capability, effort):
-    model = config["model_mapping"][capability]
-    reasoning = config["reasoning_mapping"][effort]
+def format_recommendation(model, reasoning):
     return f"Recommended: {model} · {reasoning}", model, reasoning
 
 

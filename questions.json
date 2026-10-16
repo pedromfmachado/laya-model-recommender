@@ -1,19 +1,19 @@
 {
   "capability": {
     "type": "choice",
-    "instructions": "Luna is the default. Choose Sol only when the task requires the demanding or exceptional examples. Choose the lowest capability sufficient for `request`; classify the work, not its vocabulary, length, or number of outputs.",
+    "instructions": "GPT-6 Luna is the default. Choose GPT-6.1 Sol only when the task requires the demanding or exceptional examples. Choose the lowest capability sufficient for `request`; classify the work, not its vocabulary, length, or number of outputs.",
     "criteria": {
-      "luna": "Examples: rewrite a message, format JSON, write a small function, fix a routine bug, update UI copy.",
-      "sol": "Examples: design backward-compatible synchronization, plan a live database migration, diagnose a race across services, reconcile conflicting system requirements; invent an algorithm when known methods fail, develop a new mathematical proof technique, create a protocol for a novel fault model."
+      "GPT-6 Luna": "Examples: rewrite a message, format JSON, write a small function, fix a routine bug, update UI copy.",
+      "GPT-6.1 Sol": "Examples: design backward-compatible synchronization, plan a live database migration, diagnose a race across services, reconcile conflicting system requirements; invent an algorithm when known methods fail, develop a new mathematical proof technique, create a protocol for a novel fault model."
     }
   },
   "effort": {
     "type": "choice",
     "instructions": "Choose the least reasoning sufficient for `request`. Straightforward multi-step work belongs to medium; uncertainty and difficult verification distinguish higher levels.",
     "criteria": {
-      "medium": "Examples: fix a typo, edit a known resource, implement a specified function, repeat independent changes, run straightforward checks.",
-      "high": "Examples: trace usages before a compatibility-sensitive rename, compare implementation alternatives, inspect dependencies to find a safe change.",
-      "extra_high": "Examples: reproduce an intermittent concurrency bug, test competing explanations for inconsistent logs, verify an original proof against adversarial cases."
+      "Medium": "Examples: fix a typo, edit a known resource, implement a specified function, repeat independent changes, run straightforward checks.",
+      "High": "Examples: trace usages before a compatibility-sensitive rename, compare implementation alternatives, inspect dependencies to find a safe change.",
+      "Extra High": "Examples: reproduce an intermittent concurrency bug, test competing explanations for inconsistent logs, verify an original proof against adversarial cases."
     }
   }
 }
