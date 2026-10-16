@@ -1,19 +1,51 @@
 """Local MCP tool used by the synchronous prompt-submit hook."""
+import hashlib
 import json
 import logging
+import os
+import sys
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 from mcp.server.fastmcp import FastMCP, Context
 
-from hook import (
-    claim_session,
-    classify,
-    compare_model,
-    session_marker,
-)
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
 logging.basicConfig(level=logging.WARNING)
 mcp = FastMCP("model-recommender")
+
+
+def session_marker(session_id):
+    state_dir = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "model-routing" / "sessions"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    return state_dir / hashlib.sha256(session_id.encode()).hexdigest()
+
+
+def claim_session(session_id):
+    marker = session_marker(session_id)
+    try:
+        marker.touch(exist_ok=False)
+    except FileExistsError:
+        return False
+    return True
+
+
+def classify(request):
+    questions = json.loads(Path(__file__).with_name("questions.json").read_text())
+    from laya import Router
+
+    result = Router(
+        models={"english": sys.argv[1]} if len(sys.argv) > 1 else None,
+        default="english", device="cpu",
+    ).predict({"request": request}, questions, model="english")
+    if result["usage"]["truncated"]:
+        raise ValueError("Prompt did not fit the classifier")
+
+    model = result["answers"]["capability"]["choice"]
+    reasoning = result["answers"]["effort"]["choice"]
+    return model, reasoning
 
 
 def _remove_schema_title(schema):
@@ -68,7 +100,8 @@ async def recommend_for_prompt(
 
         suggested_model, suggested_reasoning = classify(prompt.strip())
         recommendation = f"Recommended: {suggested_model} · {suggested_reasoning}"
-        differs, matches = compare_model({"model": model}, suggested_model)
+        matches = model == suggested_model
+        differs = bool(model) and not matches
         if not claim_session(session_id):
             return hook_output()
         if not differs and matches:

@@ -6,7 +6,7 @@ data_dir="${CODEX_HOME:-$HOME/.codex}/model-recommender"
 plugin_data_dir="$data_dir/plugin"
 export UV_CACHE_DIR="$data_dir/cache"
 export UV_PYTHON_INSTALL_DIR="$data_dir/python"
-# Keep the downloaded classifier model in this plugin's persistent data directory.
+# Keep the model in plugin-owned data instead of mixing it into Hugging Face's shared default cache.
 export HF_HOME="$data_dir/models"
 python="$data_dir/venv/bin/python"
 lock_dir="$data_dir/setup.lock"
@@ -14,7 +14,7 @@ lock_dir="$data_dir/setup.lock"
 fingerprint() {
     {
         cat "$plugin_root/.codex-plugin/plugin.json"
-        cksum "$plugin_root/runtime.sh" "$plugin_root/mcp_server.py" "$plugin_root/hook.py" \
+        cksum "$plugin_root/runtime.sh" "$plugin_root/mcp_server.py" \
             "$plugin_root/questions.json"
     } | cksum | awk '{ print $1 "-" $2 }'
 }
@@ -22,7 +22,7 @@ fingerprint() {
 is_ready() {
     [ -x "$data_dir/bin/uv" ] && [ -x "$python" ] && [ -f "$data_dir/ready" ] &&
         [ "$(cat "$data_dir/ready")" = "$(fingerprint)" ] &&
-        [ -f "$plugin_data_dir/mcp_server.py" ] && [ -f "$plugin_data_dir/hook.py" ]
+        [ -f "$plugin_data_dir/mcp_server.py" ]
 }
 
 setup() {
@@ -60,8 +60,8 @@ setup_locked() {
     printf '%s\n' 'Downloading the model (the first download can take a few minutes)…'
     HF_HUB_OFFLINE=0 TRANSFORMERS_OFFLINE=0 "$python" -c "from laya import Router; Router().preload(['english'])"
     mkdir -p "$plugin_data_dir"
-    rm -f "$plugin_data_dir/router.json"
-    cp "$plugin_root/runtime.sh" "$plugin_root/mcp_server.py" "$plugin_root/hook.py" \
+    rm -f "$plugin_data_dir/router.json" "$plugin_data_dir/hook.py"
+    cp "$plugin_root/runtime.sh" "$plugin_root/mcp_server.py" \
         "$plugin_root/questions.json" "$plugin_data_dir/"
     fingerprint > "$data_dir/ready.tmp"
     mv "$data_dir/ready.tmp" "$data_dir/ready"
