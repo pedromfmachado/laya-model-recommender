@@ -6,7 +6,7 @@
     "sol": "GPT-6.1 Sol"
   },
   "reasoning_mapping": {
-    "mid": "Medium",
+    "medium": "Medium",
     "high": "High",
     "extra_high": "Extra High"
   }
