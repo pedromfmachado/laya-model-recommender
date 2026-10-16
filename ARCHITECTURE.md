@@ -1,16 +1,16 @@
 # Architecture
 
-Before Codex processes a prompt, its `UserPromptSubmit` hook calls the recommendation tool on the plugin's MCP server. The server classifies the first prompt in a session and returns a result that lets the prompt continue or pauses it while the user changes settings.
+On each prompt, the `UserPromptSubmit` hook invokes `recommend_for_prompt` on the local MCP server started by `hook.py`. The server classifies only the first prompt in a session, then lets the prompt continue or pauses it while the user changes settings.
 
 ## Components
 
 | Component | Responsibility |
 | --- | --- |
 | Codex host | Runs the prompt hook, presents the user's choices, and applies the hook result. |
-| `UserPromptSubmit` hook (`hooks.json`) | Calls the recommendation tool before the prompt proceeds and supplies the prompt, session ID, and selected model. |
-| Plugin runtime (`runtime.sh`) | Prepares the private Python runtime, dependencies, and classifier model when needed, then starts the MCP server. |
-| Recommender MCP server (`hook.py`) | Checks whether this is the session's first prompt, runs local classification, compares the recommended model with the selected model, coordinates the user choice, and returns an allow or block result. |
-| Local Laya classifier | Predicts capability and reasoning demand from the configured questions. Inference runs locally and offline after setup. |
+| `UserPromptSubmit` hook (`hooks/hooks.json`) | Invokes the recommendation tool with the prompt, session ID, and selected model. |
+| Plugin runtime (`runtime.sh`) | Prepares the private Python runtime, dependencies, and classifier model when needed, then starts `hook.py`. |
+| Recommender MCP server (`hook.py`) | Tracks handled sessions, classifies prompts, compares the recommended model with the selected model, coordinates the user choice, and returns the hook result. |
+| Local Laya classifier and `questions.json` | Predict capability and reasoning demand from the configured questions. Inference runs locally and offline after setup. |
 | User | Chooses whether to keep current settings or change them. The plugin does not change settings. |
 
 ## Communication flow
@@ -19,37 +19,27 @@ Before Codex processes a prompt, its `UserPromptSubmit` hook calls the recommend
 sequenceDiagram
     actor User
     participant Codex
-    participant Hook as Prompt hook
-    participant MCP as Recommender MCP
-    participant Classifier as Local classifier
+    participant Hook as Recommender (hook.py)
 
     User->>Codex: Submit prompt
-    Codex->>Hook: UserPromptSubmit
-    Hook->>MCP: recommend_for_prompt(prompt, session, model)
-    MCP->>MCP: Check first-prompt session marker
-    opt First prompt in session
-        MCP->>Classifier: Classify capability and reasoning demand
-        Classifier-->>MCP: Classification result
-        MCP->>MCP: Compare recommended model with selected model
-    end
+    Codex->>Hook: recommend_for_prompt(prompt, session, model)
     alt Recommended model differs
-        MCP->>Codex: Elicit a choice
+        Hook->>Codex: Elicit a choice
         Codex-->>User: Show recommendation and choices
         User->>Codex: Choose an action
-        Codex->>MCP: Return the choice
+        Codex->>Hook: Return the choice
         alt Keep current settings
-            MCP-->>Hook: Allow prompt
+            Hook-->>Codex: Allow prompt
         else Change settings
-            MCP-->>Hook: Block and preserve original request as context
+            Hook-->>Codex: Block with original request as context
         end
     else No model mismatch or already handled
-        MCP-->>Hook: Allow prompt with recommendation if available
+        Hook-->>Codex: Allow prompt with recommendation if available
     end
-    Hook-->>Codex: Apply allow or block result
 ```
 
 ## Decision behavior
 
-- The server classifies only the first prompt in a session. It predicts capability and reasoning demand, but compares only the recommended model with the selected model.
+- The server classifies only the first prompt in a session. It uses the model and reasoning labels from `questions.json` directly, but compares only the recommended model with the selected model.
 - If the user keeps current settings, the prompt continues. If they choose to change settings, the hook blocks that submission and preserves the original request as context so a short follow-up can resume it.
 - If recommendation or elicitation fails, the prompt continues with current settings. If the MCP server cannot start or connect, Codex cannot show the recommendation choices.

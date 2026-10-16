@@ -3,7 +3,7 @@
 ## Read before changing
 
 - Classification or recommendations: read `questions.json` and `hook.py` together. Keep classifier wording and actual model/reasoning setting labels in `questions.json`; the MCP server uses those labels directly.
-- Prompt flow or elicitation: read `hook.py`, `hooks.json`, and the `Use` section in `README.md` together. Keep displayed action labels aligned with their handling code and user guidance.
+- Prompt flow or elicitation: read `hook.py`, `hooks/hooks.json`, and the `Use` section in `README.md` together. Keep displayed action labels aligned with their handling code and user guidance.
 - Setup or runtime: read `runtime.sh` and `skills/setup/SKILL.md`.
 - Installation or releases: read `README.md`, `.codex-plugin/plugin.json`, and `.agents/plugins/marketplace.json`. Keep documented names and versioned paths consistent with metadata.
 
