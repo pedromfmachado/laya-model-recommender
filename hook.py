@@ -9,6 +9,8 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 from mcp.server.fastmcp import FastMCP, Context
 
+from app_server import current_reasoning
+
 # Laya loads the classifier through Hugging Face; these flags prevent model downloads during prompts.
 os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
@@ -91,7 +93,7 @@ async def recommend_for_prompt(
     session_id: str,
     model: str = "",
 ) -> dict:
-    """Classify the first session prompt and ask what to do when settings differ."""
+    """Classify the first session prompt and ask what to do with the recommendation."""
     marker = None
     try:
         if not prompt.strip() or not session_id.strip():
@@ -101,23 +103,25 @@ async def recommend_for_prompt(
             return hook_output()
 
         suggested_model, suggested_reasoning = classify(prompt.strip())
-        recommendation = f"Recommended: {suggested_model} · {suggested_reasoning}"
-        matches = model == suggested_model
-        differs = bool(model) and not matches
+        reasoning = await current_reasoning(session_id)
         if not claim_session(session_id):
             return hook_output()
-        if not differs and matches:
+
+        reasoning_labels = {"xhigh": "Extra High"}
+        current_level = reasoning_labels.get(reasoning, reasoning.title() if reasoning else None)
+        if model and current_level and model == suggested_model and current_level.casefold() == suggested_reasoning.casefold():
             return hook_output(system_message=(
-                f"{recommendation}\n\nYour selected model matches this recommendation."
+                f"Recommended: {suggested_model} · {suggested_reasoning}\n\n"
+                "Your current settings match this recommendation."
             ))
-        if not differs:
-            return hook_output(system_message=recommendation)
 
         try:
             answer = await ctx.elicit(
                 message=(
                     f"Recommendation: {suggested_model} · {suggested_reasoning}\n\n"
-                    "What would you like to do?"
+                    f"Current: {model or 'unavailable'} · {current_level or 'reasoning unavailable'}\n\n"
+                    + ("Compare your current reasoning level with the recommendation. " if not current_level else "")
+                    + "What would you like to do?"
                 ),
                 schema=PromptChoice,
             )
@@ -132,8 +136,8 @@ async def recommend_for_prompt(
         return hook_output(
             decision="block",
             reason=(
-                "Prompt paused. Change your settings, then send a short follow-up to continue "
-                "with the original request."
+                f"Prompt paused. Recommended: {suggested_model} · {suggested_reasoning}. Change your settings, "
+                "then send a short follow-up to continue with the original request."
             ),
             additional_context=(
                 "The following is the user's original request, preserved as a JSON string "

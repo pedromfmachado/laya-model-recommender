@@ -23,7 +23,7 @@ sequenceDiagram
 
     User->>Codex: Submit prompt
     Codex->>Hook: recommend_for_prompt(prompt, session, model)
-    alt Recommended model differs
+    alt First prompt with different or unavailable settings
         Hook->>Codex: Elicit a choice
         Codex-->>User: Show recommendation and choices
         User->>Codex: Choose an action
@@ -33,8 +33,8 @@ sequenceDiagram
         else Change settings
             Hook-->>Codex: Block with original request as context
         end
-    else No model mismatch or already handled
-        Hook-->>Codex: Allow prompt with recommendation if available
+    else Settings match or session already handled
+        Hook-->>Codex: Allow prompt, with confirmation for a match
     end
 ```
 
@@ -46,6 +46,6 @@ When the user chooses to change settings, the server intentionally preserves the
 
 ## Decision behavior
 
-- The server classifies only the first prompt in a session. It uses the model and reasoning labels from `questions.json` directly, but compares only the recommended model with the selected model.
+- The server classifies only the first prompt in a session. It attempts to read the current reasoning effort from a loaded thread through the app-server proxy. If the proxy or effort is unavailable, it asks the user to compare the reasoning level. Matching model and reasoning settings continue without a choice.
 - If the user keeps current settings, the prompt continues. If they choose to change settings, the hook blocks that submission and preserves the original request as context so a short follow-up can resume it.
 - If recommendation or elicitation fails, the prompt continues with current settings. If the MCP server cannot start or connect, Codex cannot show the recommendation choices.

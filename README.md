@@ -15,9 +15,9 @@ Open Codex, review and trust the hook in Hooks settings (or `/hooks` in the CLI)
 
 ## Use
 
-Submit a prompt in a new chat. On the first prompt in a session, the hook shows its recommended model and reasoning level.
+Submit a prompt in a new chat. On the first prompt in a session, the hook shows its recommendation alongside your current settings when available. If it cannot read your current reasoning level, compare it with the recommendation yourself. If both settings match, the prompt continues with a confirmation.
 
-- If the recommended model differs from your current model, choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** Choosing the second option blocks the prompt but keeps the original request in context. After changing settings, send a short follow-up, such as “Continue,” to resume it. If your model matches, the prompt continues with a short confirmation.
+- Choose **Use my current settings for this prompt.** or **Change settings, then continue with this prompt.** Choosing the second option pauses the prompt, shows the recommendation, and keeps the original request in context. After changing settings, send a short follow-up, such as “Continue,” to resume it.
 
 The plugin leaves model and reasoning selection to you. See [ARCHITECTURE.md](ARCHITECTURE.md) for component responsibilities and the prompt flow.
 
