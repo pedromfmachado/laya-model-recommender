@@ -86,6 +86,13 @@ def hook_output(decision=None, reason=None, system_message=None, additional_cont
     return result
 
 
+def reasoning_from_metadata(ctx):
+    meta = ctx.request_context.meta
+    metadata = (meta.model_extra or {}).get("x-codex-turn-metadata") if meta else None
+    effort = metadata.get("reasoning_effort") if isinstance(metadata, dict) else None
+    return effort if isinstance(effort, str) and effort else None
+
+
 @mcp.tool()
 async def recommend_for_prompt(
     ctx: Context,
@@ -103,7 +110,7 @@ async def recommend_for_prompt(
             return hook_output()
 
         suggested_model, suggested_reasoning = classify(prompt.strip())
-        reasoning = await current_reasoning(session_id)
+        reasoning = reasoning_from_metadata(ctx) or await current_reasoning(session_id)
         if not claim_session(session_id):
             return hook_output()
 
