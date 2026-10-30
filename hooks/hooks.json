@@ -10,7 +10,9 @@
             "input": {
               "prompt": "${prompt}",
               "session_id": "${session_id}",
-              "model": "${model}"
+              "model": "${model}",
+              "turn_id": "${turn_id}",
+              "transcript_path": "${transcript_path}"
             },
             "timeout": 60,
             "statusMessage": "Recommending a model for this task"

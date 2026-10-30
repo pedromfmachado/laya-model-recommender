@@ -7,7 +7,7 @@ On each prompt, the `UserPromptSubmit` hook invokes `recommend_for_prompt` on th
 | Component | Responsibility |
 | --- | --- |
 | Codex host | Runs the prompt hook, presents the user's choices, and applies the hook result. |
-| `UserPromptSubmit` hook (`hooks/hooks.json`) | Invokes the recommendation tool with the prompt, session ID, and selected model. |
+| `UserPromptSubmit` hook (`hooks/hooks.json`) | Invokes the recommendation tool with the prompt, session ID, selected model, turn ID, and transcript path. |
 | Plugin runtime (`runtime.sh`) | Prepares the private Python runtime, dependencies, and classifier model when needed, then starts `hook.py`. |
 | Recommender MCP server (`hook.py`) | Tracks handled sessions, classifies prompts, compares the recommended model with the selected model, coordinates the user choice, and returns the hook result. |
 | Local Laya classifier and `questions.json` | Predict capability and reasoning demand from the configured questions. Inference runs locally and offline after setup. |
@@ -22,7 +22,7 @@ sequenceDiagram
     participant Hook as Recommender (hook.py)
 
     User->>Codex: Submit prompt
-    Codex->>Hook: recommend_for_prompt(prompt, session, model)
+    Codex->>Hook: recommend_for_prompt(prompt, session, model, turn_id, transcript_path)
     alt First prompt with different or unavailable settings
         Hook->>Codex: Elicit a choice
         Codex-->>User: Show recommendation and choices
@@ -46,6 +46,6 @@ When the user chooses to change settings, the server intentionally preserves the
 
 ## Decision behavior
 
-- The server classifies only the first prompt in a session. It attempts to read the current reasoning effort from a loaded thread through the app-server proxy. If the proxy or effort is unavailable, it asks the user to compare the reasoning level. Matching model and reasoning settings continue without a choice.
+- The server classifies only the first prompt in a session. It reads the current reasoning effort from a transcript `turn_context` record matching the submitted turn ID. The lookup reads at most the last 8 MiB of the transcript, so an earlier or oversized record can be unavailable. If the matching effort is unavailable, it asks the user to compare the reasoning level. Matching model and reasoning settings continue without a choice.
 - If the user keeps current settings, the prompt continues. If they choose to change settings, the hook blocks that submission and preserves the original request as context so a short follow-up can resume it.
 - If recommendation or elicitation fails, the prompt continues with current settings. If the MCP server cannot start or connect, Codex cannot show the recommendation choices.

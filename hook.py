@@ -9,8 +9,6 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 from mcp.server.fastmcp import FastMCP, Context
 
-from app_server import current_reasoning
-
 # Laya loads the classifier through Hugging Face; these flags prevent model downloads during prompts.
 os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
@@ -86,11 +84,34 @@ def hook_output(decision=None, reason=None, system_message=None, additional_cont
     return result
 
 
-def reasoning_from_metadata(ctx):
-    meta = ctx.request_context.meta
-    metadata = (meta.model_extra or {}).get("x-codex-turn-metadata") if meta else None
-    effort = metadata.get("reasoning_effort") if isinstance(metadata, dict) else None
-    return effort if isinstance(effort, str) and effort else None
+def reasoning_from_transcript(turn_id, transcript_path):
+    if not turn_id or not transcript_path:
+        return None
+    try:
+        with open(transcript_path, "rb") as transcript:
+            transcript.seek(0, os.SEEK_END)
+            size = transcript.tell()
+            start = max(0, size - 8 * 1024 * 1024)
+            transcript.seek(start)
+            tail = transcript.read(8 * 1024 * 1024)
+        if start:
+            _, separator, tail = tail.partition(b"\n")
+            if not separator:
+                return None
+        for line in reversed(tail.splitlines()):
+            try:
+                record = json.loads(line)
+            except (ValueError, UnicodeDecodeError):
+                continue
+            if not isinstance(record, dict) or record.get("type") != "turn_context":
+                continue
+            payload = record.get("payload")
+            if isinstance(payload, dict) and payload.get("turn_id") == turn_id:
+                effort = payload.get("effort")
+                return effort if isinstance(effort, str) and effort.strip() else None
+    except (OSError, ValueError, TypeError):
+        return None
+    return None
 
 
 @mcp.tool()
@@ -99,6 +120,8 @@ async def recommend_for_prompt(
     prompt: str,
     session_id: str,
     model: str = "",
+    turn_id: str = "",
+    transcript_path: str = "",
 ) -> dict:
     """Classify the first session prompt and ask what to do with the recommendation."""
     marker = None
@@ -110,7 +133,7 @@ async def recommend_for_prompt(
             return hook_output()
 
         suggested_model, suggested_reasoning = classify(prompt.strip())
-        reasoning = reasoning_from_metadata(ctx) or await current_reasoning(session_id)
+        reasoning = reasoning_from_transcript(turn_id, transcript_path)
         if not claim_session(session_id):
             return hook_output()
 
