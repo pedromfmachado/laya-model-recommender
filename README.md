@@ -42,7 +42,7 @@ Edit `questions.json` to customize recommendation labels and classification guid
 
 - `questions.json` defines the `capability` and `effort` choice questions, instructions, and option labels. The labels are the model and reasoning settings shown in the recommendation.
 
-Capability labels use the model names `GPT-6 Luna` and `GPT-6.1 Sol`. Effort labels use the reasoning settings `Medium`, `High`, and `Extra High`.
+Capability labels use the model names `GPT-6 Luna`, `GPT-6.1 Terra`, and `GPT-6.1 Sol`. Effort labels use the reasoning settings `Medium`, `High`, and `Extra High`.
 
 Each question must use `type: "choice"` with nonempty instructions and option labels. Use the exact model names for capability labels and the exact reasoning settings for effort labels.
 

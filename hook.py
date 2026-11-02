@@ -34,8 +34,7 @@ def claim_session(session_id):
     return True
 
 
-def classify(request):
-    questions = json.loads(Path(__file__).with_name("questions.json").read_text())
+def classify(request, questions):
     from laya import Router
 
     result = Router(
@@ -48,6 +47,32 @@ def classify(request):
     model = result["answers"]["capability"]["choice"]
     reasoning = result["answers"]["effort"]["choice"]
     return model, reasoning
+
+
+def model_label(model, questions):
+    def normalized(value):
+        return " ".join(value.casefold().replace("-", " ").split())
+
+    matches = [
+        label for label in questions["capability"]["criteria"]
+        if normalized(label) == normalized(model)
+    ]
+    if len(matches) == 1:
+        return matches[0]
+    if matches:
+        return model
+
+    try:
+        cache = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "models_cache.json"
+        models = json.loads(cache.read_text()).get("models", [])
+        matches = [
+            entry["display_name"] for entry in models
+            if isinstance(entry, dict) and entry.get("slug") == model
+            and isinstance(entry.get("display_name"), str) and entry["display_name"].strip()
+        ]
+        return matches[0] if len(matches) == 1 else model
+    except (OSError, ValueError, TypeError, AttributeError):
+        return model
 
 
 def _remove_schema_title(schema):
@@ -132,7 +157,9 @@ async def recommend_for_prompt(
         if marker.exists():
             return hook_output()
 
-        suggested_model, suggested_reasoning = classify(prompt.strip())
+        questions = json.loads(Path(__file__).with_name("questions.json").read_text())
+        suggested_model, suggested_reasoning = classify(prompt.strip(), questions)
+        model = model_label(model, questions)
         reasoning = reasoning_from_transcript(turn_id, transcript_path)
         if not claim_session(session_id):
             return hook_output()
