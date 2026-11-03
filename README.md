@@ -7,7 +7,7 @@ Get a local model and reasoning recommendation for the first prompt in each Code
 <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-plugin-24292f?style=flat-square">
 <img alt="Local classification" src="https://img.shields.io/badge/classification-local-2f6f5e?style=flat-square">
 <img alt="macOS and Linux" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-59636e?style=flat-square">
-[![MIT license](https://img.shields.io/badge/license-MIT-59636e?style=flat-square)](LICENSE)
+<a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-59636e?style=flat-square"></a>
 
 </div>
 
